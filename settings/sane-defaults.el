@@ -40,7 +40,9 @@
 ;; Stop on 'subwords'.
 (global-subword-mode 1)
 
-(setq backup-directory-alist `(("." . "~/.emacs.d/backups")))
+;; Store backup files in /tmp/
+(setq backup-directory-alist `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 (setq backup-by-copying t)
 
 ;; Tweak mouse wheel scrolling.
