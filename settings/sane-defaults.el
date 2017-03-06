@@ -45,6 +45,9 @@
 (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 (setq backup-by-copying t)
 
+;; Don't create .#-files.
+(setq create-lockfiles nil)
+
 ;; Tweak mouse wheel scrolling.
 ;;(setq-default mouse-wheel-scroll-amount '(1))
 ;;(setq-default mouse-wheel-progressive-speed nil)
