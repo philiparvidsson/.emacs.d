@@ -47,5 +47,4 @@
         (projectile-project-root)
         (async-shell-command "make run"))))
 
-
 (provide 'setup-projectile)
