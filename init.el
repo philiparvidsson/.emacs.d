@@ -55,6 +55,7 @@
    highlight-parentheses
    hlinum
    hy-mode
+   magit
    multiple-cursors
    projectile
    rainbow-mode
