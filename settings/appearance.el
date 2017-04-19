@@ -32,7 +32,7 @@
 ;;(setq custom-theme-directory (concat user-emacs-directory "themes"))
 
 ;; Font is super important! ;-)
-(set-frame-font "Ubuntu Mono-11.0:antialias=subpixel")
+(set-frame-font "Liberation Mono-10.0:antialias=subpixel")
 
 ;; More line spacing makes code easier on the eyes.
 (setq-default line-spacing 5)
