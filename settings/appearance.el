@@ -39,6 +39,6 @@
 
 ;; Set up initial frame size if running in windowed mode.
 (when (display-graphic-p)
-  (set-frame-size (selected-frame) 98 62))
+  (set-frame-size (selected-frame) 118 62))
 
 (provide 'appearance)
