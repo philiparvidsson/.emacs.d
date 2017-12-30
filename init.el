@@ -126,7 +126,29 @@
 (setq-default python-indent-offset 2)
 
 ;;;;------------------------------------
-;;;; 3. Appearance
+;;;; 3. Functions
+;;;;------------------------------------
+
+(defvar other-window-buffer nil)
+(defun toggle-two-window-view ()
+  "Toggle between displaying one frame (normal) and two frames (side-by-side)."
+  (if (eq (length (window-list)) 2)
+      (progn
+        (setq other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
+        (set-frame-size nil (/ (frame-width) 2) (frame-height))
+        (delete-other-windows))
+    (progn
+      (set-frame-size nil (* (frame-width) 2) (frame-height))
+      (split-window-right)
+      (if (buffer-live-p other-window-buffer)
+          (progn
+            (other-window 1)
+            (set-window-buffer (selected-window) other-window-buffer)
+            (other-window 1)
+            (progn))))))
+
+;;;;------------------------------------
+;;;; 4. Appearance
 ;;;;------------------------------------
 
 ;; Set up font if running in windowed mode.
@@ -150,7 +172,7 @@
 (fringe-mode '(0 . 0))
 
 ;;;;------------------------------------
-;;;; 4. Packages
+;;;; 5. Packages
 ;;;;------------------------------------
 
 (require 'package)
@@ -209,12 +231,10 @@
                     (lambda () (interactive)
                       (call-process "explorer" nil 0 nil "."))))
 
-;; Open another window with C-x 3 and double frame width (if running in window).
-(if (display-graphic-p)
-    (global-set-key (kbd "C-x 3")
-                    (lambda () (interactive)
-                      (set-frame-size nil (+ (frame-width) 108) (frame-height))
-                      (split-window-right))))
+;; Toggle double frame view with C-S-<tab>.
+(if (window-system)
+    (global-set-key (kbd "C-S-<tab>")
+                    (lambda () (interactive) (toggle-two-window-view))))
 
 ;; Backspace with C-S-d
 (global-set-key (kbd "C-S-d") (lambda () (interactive) (backward-delete-char 1)))
@@ -232,7 +252,7 @@
 (global-set-key (kbd "C-M-y") (lambda () (interactive) (yank-pop -1)))
 
 ;;;;------------------------------------
-;;;; 6. Package setup
+;;;; 7. Package setup
 ;;;;------------------------------------
 
 ;;; company
