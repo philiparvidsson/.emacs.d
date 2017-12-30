@@ -94,8 +94,13 @@
 (setq-default buffer-file-coding-system 'utf-8-unix)
 
 ;; Remove trailing whitespace from all lines on save (but make sure there's a linebreak at the end
-;; of the file).
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+;; of the file). Markdown files need to keep their trailing spaces so they're excluded.
+(add-hook 'before-save-hook
+          (lambda ()
+            (message buffer-file-name)
+            (if (not (string-equal (file-name-extension buffer-file-name) "md"))
+                (delete-trailing-whitespace))))
+
 (setq require-final-newline t)
 
 ;; Match parentheses automatically.
