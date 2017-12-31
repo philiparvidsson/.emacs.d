@@ -46,10 +46,7 @@
 ;; Separate 'custom.el' file (otherwise it will be appended to this file).
 (setq custom-file (concat user-emacs-directory "custom.el"))
 
-;; Set frame title.
-(setq frame-title-format '("%b"))
-
-;; Increase GC threshold to run GC less often.
+;; Increase GC threshold to run GC less often (default is 800000).
 (setq gc-cons-threshold 5000000)
 
 ;; Variables used for making decisions during initialization.
@@ -97,8 +94,7 @@
 ;; of the file). Markdown files need to keep their trailing spaces so they're excluded.
 (add-hook 'before-save-hook
           (lambda ()
-            (message buffer-file-name)
-            (if (not (string-equal (file-name-extension buffer-file-name) "md"))
+            (unless (string-equal (file-name-extension buffer-file-name) "md")
                 (delete-trailing-whitespace))))
 
 (setq require-final-newline t)
@@ -134,6 +130,14 @@
 ;;;; 3. Functions
 ;;;;------------------------------------
 
+(defun packages-install (packages)
+  "Install each package specified in the list, unless it is already installed."
+  (unless package-archive-contents
+    (package-refresh-contents))
+  (dolist (it packages)
+    (unless (package-installed-p it))
+        (package-install it)))
+
 (defvar other-window-buffer nil)
 (defun toggle-two-window-view ()
   "Toggle between displaying one frame (normal) and two frames (side-by-side)."
@@ -145,16 +149,17 @@
     (progn
       (set-frame-size nil (* (frame-width) 2) (frame-height))
       (split-window-right)
-      (if (buffer-live-p other-window-buffer)
-          (progn
-            (other-window 1)
-            (set-window-buffer (selected-window) other-window-buffer)
-            (other-window 1)
-            (progn))))))
+      (when (buffer-live-p other-window-buffer)
+        (other-window 1)
+        (set-window-buffer (selected-window) other-window-buffer)
+        (other-window 1)))))
 
 ;;;;------------------------------------
 ;;;; 4. Appearance
 ;;;;------------------------------------
+
+;; Set frame title.
+(setq frame-title-format '("%b"))
 
 ;; Set up font if running in windowed mode.
 (when (window-system)
@@ -186,14 +191,6 @@
 
 (package-initialize)
 
-(defun packages-install (packages)
-  (progn
-    (unless package-archive-contents
-      (package-refresh-contents))
-    (dolist (it packages)
-      (if (not (package-installed-p it))
-          (package-install it)))))
-
 ;; Install packages from (M)ELPA.
 (packages-install
  '(company
@@ -213,14 +210,16 @@
 ;;;; 5. Key-bindings
 ;;;;------------------------------------
 
-;; Toggle syntax highlighting with C-c z.
-(global-set-key (kbd "C-c z") 'global-font-lock-mode)
+;; Shortcut to align lines by regexp.
+(global-set-key (kbd "C-c a") 'align-regexp)
 
 ;; Switch between two buffers with C-c b
 (global-set-key (kbd "C-c b") (lambda () (interactive) (switch-to-buffer nil)))
 
-;; Shortcut to align lines by regexp.
-(global-set-key (kbd "C-c a") 'align-regexp)
+;; Toggle double frame view.
+(if (window-system)
+    (global-set-key (kbd "C-c d")
+                    (lambda () (interactive) (toggle-two-window-view))))
 
 ;; Open current directory with File Explorer.
 (if running-on-windows
@@ -228,10 +227,11 @@
                     (lambda () (interactive)
                       (call-process "explorer" nil 0 nil "."))))
 
-;; Toggle double frame view with C-c d.
-(if (window-system)
-    (global-set-key (kbd "C-c d")
-                    (lambda () (interactive) (toggle-two-window-view))))
+;; Go to line.
+(global-set-key (kbd "C-c g") 'goto-line)
+
+;; Toggle syntax highlighting.
+(global-set-key (kbd "C-c z") 'global-font-lock-mode)
 
 ;;;;------------------------------------
 ;;;; 7. Package setup
@@ -261,15 +261,18 @@
 ;;; multiple-cursors
 (require 'multiple-cursors)
 
+(global-set-key (kbd "C-c r") 'mc/mark-all-symbols-like-this)
+
+;; TODO: Fix these - not happy with the bindings.
+(global-set-key (kbd "M-<up>") 'mc/mark-next-like-this-symbol)
 (global-set-key (kbd "M-<down>") 'mc/mark-next-like-this)
-(global-set-key (kbd "M-<up>"  ) 'mc/mark-next-like-this-symbol)
 
 ;;; projectile
 (require 'projectile)
 
 ;; Make sure Projectile ignores irrelevant directories.
 (setq projectile-globally-ignored-directories
-      (append '(".git" ".svn" ".vs" "bin" "elpa" "node_modules" "obj")
+      (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
               projectile-globally-ignored-directories))
 
 (setq projectile-globally-ignored-files
@@ -286,7 +289,6 @@
 (projectile-mode)
 
 ;;; spacemacs-theme
-
 (setq spacemacs-theme-comment-bg nil)
 (load-theme 'spacemacs-light t)
 
