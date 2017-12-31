@@ -213,48 +213,25 @@
 ;;;; 5. Key-bindings
 ;;;;------------------------------------
 
-;; Disable C-t.
-(global-set-key (kbd "C-t") nil)
+;; Toggle syntax highlighting with C-c z.
+(global-set-key (kbd "C-c z") 'global-font-lock-mode)
 
-;; Toggle syntax highlighting with C-z.
-(global-set-key (kbd "C-z") 'global-font-lock-mode)
-
-;; Switch between two buffers with C-b
-(global-set-key (kbd "C-b") (lambda () (interactive) (switch-to-buffer nil)))
+;; Switch between two buffers with C-c b
+(global-set-key (kbd "C-c b") (lambda () (interactive) (switch-to-buffer nil)))
 
 ;; Shortcut to align lines by regexp.
-(global-set-key (kbd "M-p") 'align-regexp)
-
-;; Move between windows easily.
-(global-set-key (kbd "C-<tab>") 'other-window)
-(global-set-key (kbd "M-<left>") 'windmove-left)
-(global-set-key (kbd "M-<right>") 'windmove-right)
+(global-set-key (kbd "C-c a") 'align-regexp)
 
 ;; Open current directory with File Explorer.
 (if running-on-windows
-    (global-set-key (kbd "M-e")
+    (global-set-key (kbd "C-c e")
                     (lambda () (interactive)
                       (call-process "explorer" nil 0 nil "."))))
 
-;; Toggle double frame view with C-S-<tab>.
+;; Toggle double frame view with C-c d.
 (if (window-system)
-    (global-set-key (kbd "C-S-<tab>")
+    (global-set-key (kbd "C-c d")
                     (lambda () (interactive) (toggle-two-window-view))))
-
-;; Backspace with C-S-d
-(global-set-key (kbd "C-S-d") (lambda () (interactive) (backward-delete-char 1)))
-
-;; Move to previous chars with C-S-f
-(global-set-key (kbd "C-S-f") (lambda () (interactive) (forward-char -1)))
-
-;; Move to previous line with C-S-n
-(global-set-key (kbd "C-S-n") (lambda () (interactive) (previous-line)))
-
-;; Scroll up with C-S-v
-(global-set-key (kbd "C-S-v") (lambda () (interactive) (scroll-down-command)))
-
-;; Iterate backwards through the kill ring with C-M-y.
-(global-set-key (kbd "C-M-y") (lambda () (interactive) (yank-pop -1)))
 
 ;;;;------------------------------------
 ;;;; 7. Package setup
@@ -307,9 +284,6 @@
 
 ;; Enable Projectile everywhere.
 (projectile-mode)
-
-;; Make it easy to find files with Projectile.
-(global-set-key (kbd "C-p") 'projectile-find-file)
 
 ;;; spacemacs-theme
 
