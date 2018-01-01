@@ -135,8 +135,8 @@
   (unless package-archive-contents
     (package-refresh-contents))
   (dolist (it packages)
-    (unless (package-installed-p it))
-    (package-install it)))
+    (unless (package-installed-p it)
+      (package-install it))))
 
 (defvar other-window-buffer nil)
 (defun toggle-two-window-view ()
