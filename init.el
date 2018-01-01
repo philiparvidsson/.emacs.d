@@ -95,7 +95,7 @@
 (add-hook 'before-save-hook
           (lambda ()
             (unless (string= (file-name-extension buffer-file-name) "md")
-                (delete-trailing-whitespace))))
+              (delete-trailing-whitespace))))
 
 (setq require-final-newline t)
 
@@ -136,7 +136,7 @@
     (package-refresh-contents))
   (dolist (it packages)
     (unless (package-installed-p it))
-        (package-install it)))
+    (package-install it)))
 
 (defvar other-window-buffer nil)
 (defun toggle-two-window-view ()
@@ -264,6 +264,7 @@
 ;;; multiple-cursors
 (require 'multiple-cursors)
 
+;; Helper functions for multiple-cursors (while remaining in multiple-cursors key-binding mode).
 (defun mc-cycle-backward             () (interactive) (mc-mode) (mc/cycle-backward))
 (defun mc-cycle-forward              () (interactive) (mc-mode) (mc/cycle-forward))
 (defun mc-insert-numbers             () (interactive) (mc-mode) (mc/insert-numbers 1))
@@ -272,6 +273,7 @@
 (defun mc-mark-next-like-this-symbol () (interactive) (mc-mode) (mc/mark-next-like-this-symbol 1))
 
 (defun mc-mode ()
+  "Enters multiple-cursors key-binding mode for easy access."
   (interactive)
   (set-temporary-overlay-map
    (let ((map (make-sparse-keymap)))
@@ -284,7 +286,7 @@
      (define-key map (kbd "n") 'mc-mark-next-like-this-symbol)
      map)))
 
-;; Shortcut for entering multiple-cursors keymap mode.
+;; Shortcut for entering multiple-cursors key-binding mode.
 (global-set-key (kbd "C-c m") 'mc-mode)
 
 ;;; projectile
