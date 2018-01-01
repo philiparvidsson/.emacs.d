@@ -50,7 +50,7 @@
 (setq gc-cons-threshold 5000000)
 
 ;; Variables used for making decisions during initialization.
-(setq running-on-windows (string-equal system-type "windows-nt"))
+(setq is-windows (eq system-type 'windows-nt))
 
 ;;;;------------------------------------
 ;;;; 2. Setup sane defaults
@@ -94,7 +94,7 @@
 ;; of the file). Markdown files need to keep their trailing spaces so they're excluded.
 (add-hook 'before-save-hook
           (lambda ()
-            (unless (string-equal (file-name-extension buffer-file-name) "md")
+            (unless (string= (file-name-extension buffer-file-name) "md")
                 (delete-trailing-whitespace))))
 
 (setq require-final-newline t)
@@ -163,7 +163,7 @@
 
 ;; Set up font if running in windowed mode.
 (when (window-system)
-  (if running-on-windows
+  (if is-windows
       (set-frame-font "Consolas-10.0:antialias=subpixel")))
 
 ;; Custom bell function that inverts mode-line for a short period of time.
@@ -222,7 +222,7 @@
                     (lambda () (interactive) (toggle-two-window-view))))
 
 ;; Open current directory with File Explorer.
-(if running-on-windows
+(if is-windows
     (global-set-key (kbd "C-c e")
                     (lambda () (interactive)
                       (call-process "explorer" nil 0 nil "."))))
@@ -231,7 +231,7 @@
 (global-set-key (kbd "C-c g") 'goto-line)
 
 ;; Toggle syntax highlighting.
-(global-set-key (kbd "C-c z") 'global-font-lock-mode)
+(global-set-key (kbd "C-c h") 'global-font-lock-mode)
 
 ;;;;------------------------------------
 ;;;; 7. Package setup
