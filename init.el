@@ -233,6 +233,9 @@
 ;; Toggle syntax highlighting.
 (global-set-key (kbd "C-c h") 'global-font-lock-mode)
 
+;; Delete active window.
+(global-set-key (kbd "C-c w") 'delete-window)
+
 ;;;;------------------------------------
 ;;;; 7. Package setup
 ;;;;------------------------------------
@@ -261,11 +264,28 @@
 ;;; multiple-cursors
 (require 'multiple-cursors)
 
-(global-set-key (kbd "C-c r") 'mc/mark-all-symbols-like-this)
+(defun mc-cycle-backward             () (interactive) (mc-mode) (mc/cycle-backward))
+(defun mc-cycle-forward              () (interactive) (mc-mode) (mc/cycle-forward))
+(defun mc-insert-numbers             () (interactive) (mc-mode) (mc/insert-numbers 1))
+(defun mc-mark-all-symbols-like-this () (interactive) (mc-mode) (mc/mark-all-symbols-like-this))
+(defun mc-mark-next-like-this        () (interactive) (mc-mode) (mc/mark-next-like-this 1))
+(defun mc-mark-next-like-this-symbol () (interactive) (mc-mode) (mc/mark-next-like-this-symbol 1))
 
-;; TODO: Fix these - not happy with the bindings.
-(global-set-key (kbd "M-<up>") 'mc/mark-next-like-this-symbol)
-(global-set-key (kbd "M-<down>") 'mc/mark-next-like-this)
+(defun mc-mode ()
+  (interactive)
+  (set-temporary-overlay-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map (kbd "<escape>") 'ignore)
+     (define-key map (kbd "a") 'mc-mark-all-symbols-like-this)
+     (define-key map (kbd "b") 'mc-cycle-backward)
+     (define-key map (kbd "f") 'mc-cycle-forward)
+     (define-key map (kbd "i") 'mc-insert-numbers)
+     (define-key map (kbd "m") 'mc-mark-next-like-this)
+     (define-key map (kbd "n") 'mc-mark-next-like-this-symbol)
+     map)))
+
+;; Shortcut for entering multiple-cursors keymap mode.
+(global-set-key (kbd "C-c m") 'mc-mode)
 
 ;;; projectile
 (require 'projectile)
