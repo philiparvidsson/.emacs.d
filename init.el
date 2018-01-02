@@ -275,7 +275,7 @@
 (defun mc-mode ()
   "Enters multiple-cursors key-binding mode for easy access."
   (interactive)
-  (set-temporary-overlay-map
+  (set-transient-map
    (let ((map (make-sparse-keymap)))
      (define-key map (kbd "<escape>") 'ignore)
      (define-key map (kbd "a") 'mc-mark-all-symbols-like-this)
