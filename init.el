@@ -50,6 +50,7 @@
 (setq gc-cons-threshold 5000000)
 
 ;; Variables used for making decisions during initialization.
+(setq is-linux   (eq system-type 'gnu/linux))
 (setq is-windows (eq system-type 'windows-nt))
 
 ;;;;------------------------------------
@@ -163,6 +164,8 @@
 
 ;; Set up font if running in windowed mode.
 (when (window-system)
+  (if is-linux
+      (set-frame-font "Liberation Mono-9.0:antialias=subpixel"))
   (if is-windows
       (set-frame-font "Consolas-10.0:antialias=subpixel")))
 
@@ -221,11 +224,13 @@
     (global-set-key (kbd "C-c d")
                     (lambda () (interactive) (toggle-two-window-view))))
 
-;; Open current directory with File Explorer.
+;; Open current directory with a sensible file browser.
+(if is-linux
+    (global-set-key (kbd "C-c e")
+                    (lambda () (interactive) (call-process "thunar" nil 0 nil "."))))
 (if is-windows
     (global-set-key (kbd "C-c e")
-                    (lambda () (interactive)
-                      (call-process "explorer" nil 0 nil "."))))
+                    (lambda () (interactive) (call-process "explorer" nil 0 nil "."))))
 
 ;; Go to line.
 (global-set-key (kbd "C-c g") 'goto-line)
