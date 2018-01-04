@@ -273,7 +273,7 @@
 (defun mc-cycle-backward             () (interactive) (mc-mode) (mc/cycle-backward))
 (defun mc-cycle-forward              () (interactive) (mc-mode) (mc/cycle-forward))
 (defun mc-insert-numbers             () (interactive) (mc-mode) (mc/insert-numbers 1))
-(defun mc-mark-all-symbols-like-this () (interactive) (mc-mode) (mc/mark-all-symbols-like-this))
+(defun mc-mark-all-like-this         () (interactive) (mc-mode) (mc/mark-all-like-this))
 (defun mc-mark-next-like-this        () (interactive) (mc-mode) (mc/mark-next-like-this 1))
 (defun mc-mark-next-like-this-symbol () (interactive) (mc-mode) (mc/mark-next-like-this-symbol 1))
 
@@ -283,7 +283,7 @@
   (set-transient-map
    (let ((map (make-sparse-keymap)))
      (define-key map (kbd "<escape>") 'ignore)
-     (define-key map (kbd "a") 'mc-mark-all-symbols-like-this)
+     (define-key map (kbd "a") 'mc-mark-all-like-this)
      (define-key map (kbd "b") 'mc-cycle-backward)
      (define-key map (kbd "f") 'mc-cycle-forward)
      (define-key map (kbd "i") 'mc-insert-numbers)
