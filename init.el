@@ -206,6 +206,7 @@
    magit
    multiple-cursors
    projectile
+   rust-mode
    spacemacs-theme
    web-mode))
 
@@ -237,6 +238,12 @@
 
 ;; Toggle syntax highlighting.
 (global-set-key (kbd "C-c h") 'global-font-lock-mode)
+
+;; Indent region.
+(global-set-key (kbd "C-c i") 'indent-region)
+
+;; Sort lines.
+(global-set-key (kbd "C-c s") 'sort-lines)
 
 ;; Delete active window.
 (global-set-key (kbd "C-c w") 'delete-window)
@@ -273,7 +280,7 @@
 (defun mc-cycle-backward             () (interactive) (mc-mode) (mc/cycle-backward))
 (defun mc-cycle-forward              () (interactive) (mc-mode) (mc/cycle-forward))
 (defun mc-insert-numbers             () (interactive) (mc-mode) (mc/insert-numbers 1))
-(defun mc-mark-all-like-this         () (interactive) (mc-mode) (mc/mark-all-like-this))
+(defun mc-mark-all-like-this         () (interactive) (mc-mode) (mc/mark-all-dwim (use-region-p)))
 (defun mc-mark-next-like-this        () (interactive) (mc-mode) (mc/mark-next-like-this 1))
 (defun mc-mark-next-like-this-symbol () (interactive) (mc-mode) (mc/mark-next-like-this-symbol 1))
 
@@ -314,6 +321,9 @@
 
 ;; Enable Projectile everywhere.
 (projectile-mode)
+
+;;; rust-mode
+(setq rust-indent-offset 2)
 
 ;;; spacemacs-theme
 (setq spacemacs-theme-comment-bg nil)
