@@ -30,8 +30,8 @@
 ;;;; 1. Pre-initialization
 ;;;;------------------------------------
 
-;; Set initial window size (108 columns x 52 rows).
-(setq initial-frame-alist '((width . 108) (height . 52)))
+;; Set initial window size (104 columns x 58 rows).
+(setq initial-frame-alist '((width . 104) (height . 58)))
 
 ;; Disable GUI stuff that I don't want or need.
 (menu-bar-mode -1)
@@ -121,6 +121,7 @@
 ;; Use C++ mode in .h-files.
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 
+;; Basic indentation stuff.
 (c-set-offset 'innamespace [0])
 (setq-default c-basic-offset 2)
 (setq-default css-indent-offset 2)
@@ -206,6 +207,7 @@
    magit
    multiple-cursors
    projectile
+   racer
    rust-mode
    spacemacs-theme
    web-mode))
@@ -254,7 +256,8 @@
 
 ;;; company
 (setq company-idle-delay 0.1
-      company-minimum-prefix-length 2)
+      company-minimum-prefix-length 2
+      company-tooltip-align-annotations t)
 
 (add-hook 'prog-mode-hook 'global-company-mode)
 
@@ -262,7 +265,9 @@
 (eval-after-load "abbrev"             '(diminish 'abbrev-mode))
 (eval-after-load "auto-fill-function" '(diminish 'auto-fill-function))
 (eval-after-load "company"            '(diminish 'company-mode))
+(eval-after-load "eldoc"              '(diminish 'eldoc-mode))
 (eval-after-load "projectile"         '(diminish 'projectile-mode))
+(eval-after-load "racer"              '(diminish 'racer-mode))
 (eval-after-load "subword"            '(diminish 'subword-mode))
 (eval-after-load "whitespace"         '(diminish 'global-whitespace-mode))
 
@@ -321,6 +326,10 @@
 
 ;; Enable Projectile everywhere.
 (projectile-mode)
+
+;;; racer
+(add-hook 'rust-mode-hook #'racer-mode)
+(add-hook 'racer-mode-hook #'eldoc-mode)
 
 ;;; rust-mode
 (setq rust-indent-offset 2)
