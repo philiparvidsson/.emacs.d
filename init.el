@@ -207,8 +207,6 @@
    magit
    multiple-cursors
    projectile
-   racer
-   rust-mode
    spacemacs-theme
    web-mode))
 
@@ -326,13 +324,6 @@
 
 ;; Enable Projectile everywhere.
 (projectile-mode)
-
-;;; racer
-(add-hook 'rust-mode-hook #'racer-mode)
-(add-hook 'racer-mode-hook #'eldoc-mode)
-
-;;; rust-mode
-(setq rust-indent-offset 2)
 
 ;;; spacemacs-theme
 (setq spacemacs-theme-comment-bg nil)
