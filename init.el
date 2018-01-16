@@ -200,12 +200,14 @@
  '(company
    csharp-mode
    diminish
+   flycheck
    glsl-mode
    groovy-mode
    js2-mode
    lua-mode
    magit
    multiple-cursors
+   omnisharp
    projectile
    spacemacs-theme
    web-mode))
@@ -264,12 +266,17 @@
 (eval-after-load "auto-fill-function" '(diminish 'auto-fill-function))
 (eval-after-load "company"            '(diminish 'company-mode))
 (eval-after-load "eldoc"              '(diminish 'eldoc-mode))
+(eval-after-load "flycheck"           '(diminish 'flycheck-mode))
+(eval-after-load "omnisharp"          '(diminish 'omnisharp-mode))
 (eval-after-load "projectile"         '(diminish 'projectile-mode))
 (eval-after-load "racer"              '(diminish 'racer-mode))
 (eval-after-load "subword"            '(diminish 'subword-mode))
 (eval-after-load "whitespace"         '(diminish 'global-whitespace-mode))
 
 (add-hook 'auto-revert-mode-hook (lambda () (interactive) (diminish 'auto-revert-mode)))
+
+;;; flycheck
+(global-flycheck-mode)
 
 ;;; js2-mode
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
@@ -303,6 +310,10 @@
 
 ;; Shortcut for entering multiple-cursors key-binding mode.
 (global-set-key (kbd "C-c m") 'mc-mode)
+
+;;; omnisharp
+(add-hook 'csharp-mode-hook 'omnisharp-mode)
+(eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
 
 ;;; projectile
 (require 'projectile)
