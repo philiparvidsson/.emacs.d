@@ -198,6 +198,7 @@
 ;; Install packages from (M)ELPA.
 (packages-install
  '(company
+   company-jedi
    csharp-mode
    diminish
    flycheck
@@ -258,6 +259,9 @@
 (setq company-idle-delay 0.1
       company-minimum-prefix-length 2
       company-tooltip-align-annotations t)
+
+;;; company-jedi
+(eval-after-load 'company '(add-to-list 'company-backends 'company-jedi))
 
 (add-hook 'prog-mode-hook 'global-company-mode)
 

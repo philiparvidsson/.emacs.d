@@ -1,6 +1,7 @@
 *.elc
 *~
 .mc-lists.el
+/.python-environments/
 /auto-save-list/
 /elpa/
 \#*\#
