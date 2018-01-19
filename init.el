@@ -207,6 +207,7 @@
    js2-mode
    lua-mode
    magit
+   markdown-mode
    multiple-cursors
    omnisharp
    projectile
