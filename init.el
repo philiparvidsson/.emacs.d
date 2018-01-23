@@ -283,6 +283,9 @@
 ;;; flycheck
 (global-flycheck-mode)
 
+;;; groovy-mode
+(setq groovy-indent-offset 2)
+
 ;;; js2-mode
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
