@@ -356,4 +356,10 @@
 (add-to-list 'auto-mode-alist '("\\.ts\\'"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 
+(defun setup-web-mode ()
+  (setq web-mode-markup-indent-offset 2
+        web-mode-code-indent-offset   2
+        web-mode-css-indent-offset    2))
+(with-eval-after-load 'web-mode (setup-web-mode))
+
 ;;; init.el ends here
