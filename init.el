@@ -224,6 +224,9 @@
 ;; Switch between two buffers with C-c b
 (global-set-key (kbd "C-c b") (lambda () (interactive) (switch-to-buffer nil)))
 
+;; Comment easily.
+(global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
+
 ;; Toggle double frame view.
 (if (window-system)
     (global-set-key (kbd "C-c d")
