@@ -1,5 +1,9 @@
 ;;; init.el --- My personal Emacs configuration.
 
+;;; Commentary:
+
+;; This is my personal Emacs configuration file.
+;;
 ;; Author: Philip Arvidsson <hello@philiparvidsson.com>
 ;; URL: https://github.com/philiparvidsson/My-Emacs-Config
 
@@ -50,8 +54,8 @@
 (setq gc-cons-threshold 5000000)
 
 ;; Variables used for making decisions during initialization.
-(setq is-linux   (eq system-type 'gnu/linux))
-(setq is-windows (eq system-type 'windows-nt))
+(defvar is-linux (eq system-type 'gnu/linux))
+(defvar is-windows (eq system-type 'windows-nt))
 
 ;;;;------------------------------------
 ;;;; 2. Setup sane defaults
@@ -249,6 +253,22 @@
 ;; Indent region.
 (global-set-key (kbd "C-c i") 'indent-region)
 
+;; Close automatically opened window (from, e.g., search).
+(global-set-key (kbd "C-c q") (lambda () (interactive) (delete-other-windows-vertically)))
+
+(defun err-mode ()
+  "Enter error-cycling key-binding mode for cycling between errors."
+  (interactive)
+  (set-transient-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map (kbd "<escape>") 'ignore)
+     (define-key map (kbd "e") (lambda () (interactive) (err-mode) (previous-error)))
+     (define-key map (kbd "r") (lambda () (interactive) (err-mode) (next-error)))
+     map)))
+
+;; Enter error cycling mode.
+(global-set-key (kbd "C-c r") 'err-mode)
+
 ;; Sort lines.
 (global-set-key (kbd "C-c s") 'sort-lines)
 
@@ -306,7 +326,7 @@
 (defun mc-mark-next-like-this-symbol () (interactive) (mc-mode) (mc/mark-next-like-this-symbol 1))
 
 (defun mc-mode ()
-  "Enters multiple-cursors key-binding mode for easy access."
+  "Enter multiple-cursors key-binding mode for easy access."
   (interactive)
   (set-transient-map
    (let ((map (make-sparse-keymap)))
@@ -363,6 +383,6 @@
   (setq web-mode-markup-indent-offset 2
         web-mode-code-indent-offset   2
         web-mode-css-indent-offset    2))
-(with-eval-after-load 'web-mode (setup-web-mode))
+(with-eval-after-load 'web-mode 'setup-web-mode)
 
 ;;; init.el ends here
