@@ -51,10 +51,10 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 
 ;; Increase GC threshold to run GC less often (default is 800000).
-(setq gc-cons-threshold 5000000)
+(setq gc-cons-threshold 2000000)
 
 ;; Variables used for making decisions during initialization.
-(defvar is-linux (eq system-type 'gnu/linux))
+(defvar is-linux   (eq system-type 'gnu/linux))
 (defvar is-windows (eq system-type 'windows-nt))
 
 ;;;;------------------------------------
@@ -73,7 +73,7 @@
 ;; Delete selection (if any) when typing.
 (delete-selection-mode t)
 
-;; Show column- and line numbers in mode line.
+;; Show column- and line numbers in mode line, as well as file size.
 (line-number-mode t)
 (column-number-mode t)
 (size-indication-mode t)
@@ -97,12 +97,11 @@
 
 ;; Remove trailing whitespace from all lines on save (but make sure there's a linebreak at the end
 ;; of the file). Markdown files need to keep their trailing spaces so they're excluded.
+(setq require-final-newline t)
 (add-hook 'before-save-hook
           (lambda ()
             (unless (string= (file-name-extension buffer-file-name) "md")
               (delete-trailing-whitespace))))
-
-(setq require-final-newline t)
 
 ;; Match parentheses automatically.
 (electric-pair-mode t)
@@ -261,7 +260,7 @@
   (interactive)
   (set-transient-map
    (let ((map (make-sparse-keymap)))
-     (define-key map (kbd "<escape>") 'ignore)
+     (define-key map (kbd "<escape>") (lambda () (interactive) (delete-other-windows-vertically)))
      (define-key map (kbd "e") (lambda () (interactive) (err-mode) (previous-error)))
      (define-key map (kbd "r") (lambda () (interactive) (err-mode) (next-error)))
      map)))
