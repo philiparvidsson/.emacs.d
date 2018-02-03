@@ -136,7 +136,7 @@
 ;;;;------------------------------------
 
 (defun packages-install (packages)
-  "Install each package specified in the list, unless it is already installed."
+  "Install the specified PACKAGES, unless already installed."
   (unless package-archive-contents
     (package-refresh-contents))
   (dolist (it packages)
@@ -147,11 +147,15 @@
 (defun toggle-two-window-view ()
   "Toggle between displaying one frame (normal) and two frames (side-by-side)."
   (if (eq (length (window-list)) 2)
+      ;; Two windows open, so save the buffer that is open in the other window and close it, then
+      ;; halve the frame width.
       (progn
         (setq other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
         (set-frame-size nil (/ (frame-width) 2) (frame-height))
         (delete-other-windows))
     (progn
+      ;; One (probably) window open, so double the frame width and display the last shown buffer
+      ;; in the other window.
       (set-frame-size nil (* (frame-width) 2) (frame-height))
       (split-window-right)
       (when (buffer-live-p other-window-buffer)
@@ -166,7 +170,7 @@
 ;; Set frame title.
 (setq frame-title-format '("%b"))
 
-;; Set up font if running in windowed mode.
+;; Set up font if running in a window (not terminal).
 (when (window-system)
   (if is-linux
       (set-frame-font "Liberation Mono-9.0:antialias=subpixel"))
@@ -194,6 +198,7 @@
 
 (require 'package)
 
+;; Enable MELPA package repostiory.
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
 (package-initialize)
@@ -214,6 +219,7 @@
    multiple-cursors
    omnisharp
    projectile
+   spaceline
    spacemacs-theme
    web-mode))
 
@@ -270,6 +276,11 @@
 
 ;; Sort lines.
 (global-set-key (kbd "C-c s") 'sort-lines)
+
+;; Open terminal in current directory.
+(if is-windows
+    (global-set-key (kbd "C-c t")
+                    (lambda () (interactive) (call-process "Cmder" nil 0 nil "/single"))))
 
 ;; Delete active window.
 (global-set-key (kbd "C-c w") 'delete-window)
@@ -366,6 +377,10 @@
 ;; Enable Projectile everywhere.
 (projectile-mode)
 
+;;; spaceline
+(require 'spaceline-config)
+(spaceline-spacemacs-theme)
+
 ;;; spacemacs-theme
 (setq spacemacs-theme-comment-bg nil)
 (load-theme 'spacemacs-light t)
@@ -378,10 +393,9 @@
 (add-to-list 'auto-mode-alist '("\\.ts\\'"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 
-(defun setup-web-mode ()
-  (setq web-mode-markup-indent-offset 2
-        web-mode-code-indent-offset   2
-        web-mode-css-indent-offset    2))
-(with-eval-after-load 'web-mode 'setup-web-mode)
+(with-eval-after-load 'web-mode (lambda ()
+                                  (setq web-mode-markup-indent-offset 2
+                                        web-mode-code-indent-offset   2
+                                        web-mode-css-indent-offset    2)))
 
 ;;; init.el ends here
