@@ -290,11 +290,12 @@
 ;;;;------------------------------------
 
 ;;; company
-(require 'company)
 (add-hook 'prog-mode-hook 'global-company-mode)
-(eval-after-load 'company '(setq company-idle-delay 0.1
-                                 company-minimum-prefix-length 2
-                                 company-tooltip-align-annotations t))
+(eval-after-load 'company
+  '(progn
+     (setq company-idle-delay 0.1
+           company-minimum-prefix-length 2
+           company-tooltip-align-annotations t)))
 
 ;;; company-jedi
 (eval-after-load 'company '(add-to-list 'company-backends 'company-jedi))
@@ -317,17 +318,17 @@
 (global-flycheck-mode)
 
 ;;; groovy-mode
-(require 'groovy-mode)
-(eval-after-load 'groovy-mode '(setq groovy-indent-offset 2))
+(eval-after-load 'groovy-mode
+  '(progn
+     (setq groovy-indent-offset 2)))
 
 ;;; js2-mode
-(require 'js2-mode)
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-(eval-after-load 'js2-mode '(setq js2-strict-missing-semi-warning nil))
+(eval-after-load 'js2-mode
+  '(progn
+     (setq js2-strict-missing-semi-warning nil)))
 
 ;;; multiple-cursors
-(require 'multiple-cursors)
-
 ;; Helper functions for multiple-cursors (while remaining in multiple-cursors key-binding mode).
 (defun mc-cycle-backward             () (interactive) (mc-mode) (mc/cycle-backward))
 (defun mc-cycle-forward              () (interactive) (mc-mode) (mc/cycle-forward))
@@ -358,22 +359,23 @@
 (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
 
 ;;; projectile
-(require 'projectile)
 
-;; Make sure Projectile ignores irrelevant directories.
-(setq projectile-globally-ignored-directories
-      (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
-              projectile-globally-ignored-directories))
+(eval-after-load 'projectile
+  '(progn
+     ;; Make sure Projectile ignores irrelevant directories.
+     (setq projectile-globally-ignored-directories
+           (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
+                   projectile-globally-ignored-directories)
 
-(setq projectile-globally-ignored-files
-      (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~")
-              projectile-globally-ignored-files))
+           projectile-globally-ignored-files
+           (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~")
+                   projectile-globally-ignored-files))
 
-;; Use native (to Emacs) indexing.
-(setq projectile-indexing-method 'native)
+     ;; Use native (to Emacs) indexing.
+     (setq projectile-indexing-method 'native)
 
-;; Use Projectile without project files.
-(setq projectile-require-project-root nil)
+     ;; Use Projectile without project files.
+     (setq projectile-require-project-root nil)))
 
 ;; Enable Projectile everywhere.
 (projectile-mode)
@@ -383,6 +385,7 @@
 (spaceline-spacemacs-theme)
 
 ;;; spacemacs-theme
+(require 'spacemacs-common)
 (setq spacemacs-theme-comment-bg nil)
 (load-theme 'spacemacs-light t)
 
@@ -395,8 +398,10 @@
 (add-to-list 'auto-mode-alist '("\\.ts\\'"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 
-(with-eval-after-load 'web-mode '(setq web-mode-markup-indent-offset 2
-                                       web-mode-code-indent-offset   2
-                                       web-mode-css-indent-offset    2))
+(with-eval-after-load 'web-mode
+  '(progn
+     (setq web-mode-markup-indent-offset 2
+           web-mode-code-indent-offset   2
+           web-mode-css-indent-offset    2)))
 
 ;;; init.el ends here
