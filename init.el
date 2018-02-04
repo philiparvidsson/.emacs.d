@@ -292,10 +292,9 @@
 ;;; company
 (add-hook 'prog-mode-hook 'global-company-mode)
 (eval-after-load 'company
-  '(progn
-     (setq company-idle-delay 0.1
-           company-minimum-prefix-length 2
-           company-tooltip-align-annotations t)))
+  '(setq company-idle-delay 0.1
+         company-minimum-prefix-length 2
+         company-tooltip-align-annotations t))
 
 ;;; company-jedi
 (eval-after-load 'company '(add-to-list 'company-backends 'company-jedi))
@@ -308,7 +307,6 @@
 (eval-after-load 'flycheck           '(diminish 'flycheck-mode))
 (eval-after-load 'omnisharp          '(diminish 'omnisharp-mode))
 (eval-after-load 'projectile         '(diminish 'projectile-mode))
-(eval-after-load 'racer              '(diminish 'racer-mode))
 (eval-after-load 'subword            '(diminish 'subword-mode))
 (eval-after-load 'whitespace         '(diminish 'global-whitespace-mode))
 
@@ -318,17 +316,15 @@
 (global-flycheck-mode)
 
 ;;; groovy-mode
-(eval-after-load 'groovy-mode
-  '(progn
-     (setq groovy-indent-offset 2)))
+(eval-after-load 'groovy-mode '(setq groovy-indent-offset 2))
 
 ;;; js2-mode
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-(eval-after-load 'js2-mode
-  '(progn
-     (setq js2-strict-missing-semi-warning nil)))
+(eval-after-load 'js2-mode '(setq js2-strict-missing-semi-warning nil))
 
 ;;; multiple-cursors
+(require 'multiple-cursors)
+
 ;; Helper functions for multiple-cursors (while remaining in multiple-cursors key-binding mode).
 (defun mc-cycle-backward             () (interactive) (mc-mode) (mc/cycle-backward))
 (defun mc-cycle-forward              () (interactive) (mc-mode) (mc/cycle-forward))
@@ -359,7 +355,6 @@
 (eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
 
 ;;; projectile
-
 (eval-after-load 'projectile
   '(progn
      ;; Make sure Projectile ignores irrelevant directories.
@@ -399,9 +394,8 @@
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 
 (with-eval-after-load 'web-mode
-  '(progn
-     (setq web-mode-markup-indent-offset 2
-           web-mode-code-indent-offset   2
-           web-mode-css-indent-offset    2)))
+  '(setq web-mode-markup-indent-offset 2
+         web-mode-code-indent-offset   2
+         web-mode-css-indent-offset    2))
 
 ;;; init.el ends here
