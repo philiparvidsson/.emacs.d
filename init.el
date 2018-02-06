@@ -251,16 +251,16 @@
 
 (c-set-offset 'innamespace [0])
 
-;; Set up Company.
+;; Enable Flycheck for on-the-fly syntax checking.
+(with-eval-after-load "flycheck" (global-flycheck-mode))
+
+;; Set up Company for auto-completion when typing.
 (with-eval-after-load "company"
   (setq company-idle-delay 0.1
         company-minimum-prefix-length 2)
   (add-to-list 'company-backends 'company-omnisharp))
 
-;; Enable Flycheck for on-the-fly syntax checking.
-(with-eval-after-load "flycheck" (global-flycheck-mode))
-
-;; Set up Projectile.
+;; Set up Projectile for easy finding of files in the same project.
 (with-eval-after-load "projectile"
   ;; Make sure Projectile ignores irrelevant directories.
   (setq projectile-globally-ignored-directories
@@ -395,9 +395,6 @@
 
 ;; Open terminal in current directory.
 (global-set-key (kbd "C-c t") 'init--open-terminal)
-
-;; Delete active window.
-(global-set-key (kbd "C-c w") 'delete-window)
 
 ;;;;------------------------------------
 ;;;; Finalization.
