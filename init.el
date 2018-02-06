@@ -34,6 +34,8 @@
 ;;;; Constants.
 ;;;;------------------------------------
 
+(defconst init--start-time (current-time))
+
 (defconst init--is-linux   (eq system-type 'gnu/linux))
 (defconst init--is-windows (eq system-type 'windows-nt))
 
@@ -53,13 +55,20 @@
 (defconst init--terminal "Cmder")
 (defconst init--terminal-args "/single")
 
+
+;;;;------------------------------------
+;;;; Variables.
+;;;;------------------------------------
+
+;; Used to remember the last active buffer in the other window in `init--toggle-dual-window-view'.
+(defvar init--other-window-buffer nil)
+
 ;;;;------------------------------------
 ;;;; Initialization.
 ;;;;------------------------------------
 
-;; Infinite GC threshold during setup to load faster...
+;; Disable GC during initialization and then enable it again when we're done.
 (setq gc-cons-threshold most-positive-fixnum)
-;; ...then set it to something sane.
 (add-hook 'after-init-hook '(lambda () (setq gc-cons-threshold 2000000)))
 
 ;; Separate 'custom.el' file (otherwise it will be appended to this file).
@@ -74,14 +83,12 @@
 ;;;;------------------------------------
 
 (require 'package)
-
-;; Enable MELPA package repostiory.
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-
 (package-initialize)
 
 ;; Make sure we have downloaded the package archive metadata and installed all packages we need.
 (unless package-archive-contents
+  ;; Enable MELPA package repostiory.
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
   (package-refresh-contents)
 
   ;; Install packages from (M)ELPA.
@@ -114,7 +121,7 @@
 (tooltip-mode -1)
 
 ;; Disable fringes.
-(fringe-mode '(0 . 0))
+(fringe-mode 0)
 
 ;; Set initial frame size.
 (setq initial-frame-alist `((width . ,init--frame-width) (height . ,init--frame-height)))
@@ -139,8 +146,7 @@
 ;; Custom bell function that inverts the mode line for a short period of time, making it flash once.
 (setq ring-bell-function (lambda ()
                            (invert-face 'mode-line)
-                           (run-with-timer 0.05 nil 'invert-face 'mode-line))
-      visible-bell nil)
+                           (run-with-timer 0.05 nil 'invert-face 'mode-line)))
 
 ;; Show column- and line numbers in mode line, as well as file size.
 (column-number-mode t)
@@ -156,15 +162,15 @@
 (show-paren-mode t)
 
 ;; Hide some modes from the mode line - I don't need to see them.
-(with-eval-after-load 'abbrev             (diminish 'abbrev-mode))
-(with-eval-after-load 'auto-fill-function (diminish 'auto-fill-function))
-(with-eval-after-load 'company            (diminish 'company-mode))
-(with-eval-after-load 'eldoc              (diminish 'eldoc-mode))
-(with-eval-after-load 'flycheck           (diminish 'flycheck-mode))
-(with-eval-after-load 'omnisharp          (diminish 'omnisharp-mode))
-(with-eval-after-load 'projectile         (diminish 'projectile-mode))
-(with-eval-after-load 'subword            (diminish 'subword-mode))
-(with-eval-after-load 'whitespace         (diminish 'global-whitespace-mode))
+(with-eval-after-load "abbrev"             (diminish 'abbrev-mode))
+(with-eval-after-load "auto-fill-function" (diminish 'auto-fill-function))
+(with-eval-after-load "company"            (diminish 'company-mode))
+(with-eval-after-load "eldoc"              (diminish 'eldoc-mode))
+(with-eval-after-load "flycheck"           (diminish 'flycheck-mode))
+(with-eval-after-load "omnisharp"          (diminish 'omnisharp-mode))
+(with-eval-after-load "projectile"         (diminish 'projectile-mode))
+(with-eval-after-load "subword"            (diminish 'subword-mode))
+(with-eval-after-load "whitespace"         (diminish 'global-whitespace-mode))
 ;;(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode))
 
 ;; Load and configure the theme.
@@ -201,10 +207,11 @@
 (setq-default indent-tabs-mode nil)
 
 ;; Remove trailing whitespace from all lines on save (but make sure there's a linebreak at the end
-;; of the file). Markdown files need to keep their trailing spaces so they're excluded.
+;; of the file).  Markdown files need to keep their trailing spaces so they're excluded.
 (add-hook 'before-save-hook
-          '(unless (string= (file-name-extension buffer-file-name) "md")
-             (delete-trailing-whitespace)))
+          '(lambda ()
+             (unless (string= (file-name-extension buffer-file-name) "md")
+               (delete-trailing-whitespace))))
 (setq require-final-newline t)
 
 ;; Match parentheses automatically.
@@ -234,18 +241,14 @@
   (add-to-list 'auto-mode-alist it))
 
 ;; Indentation stuff.
-(setq-default c-basic-offset       init--indent-offset
-              css-indent-offset    init--indent-offset
-              js-indent-level      init--indent-offset
-              python-indent-offset init--indent-offset)
-
-(with-eval-after-load 'groovy-mode
-  (setq groovy-indent-offset init--indent-offset))
-
-(with-eval-after-load 'web-mode
-  (setq web-mode-markup-indent-offset init--indent-offset
-        web-mode-code-indent-offset   init--indent-offset
-        web-mode-css-indent-offset    init--indent-offset))
+(setq-default c-basic-offset                init--indent-offset
+              css-indent-offset             init--indent-offset
+              groovy-indent-offset          init--indent-offset
+              js-indent-level               init--indent-offset
+              python-indent-offset          init--indent-offset
+              web-mode-code-indent-offset   init--indent-offset
+              web-mode-css-indent-offset    init--indent-offset
+              web-mode-markup-indent-offset init--indent-offset)
 
 (c-set-offset 'innamespace [0])
 
@@ -253,13 +256,13 @@
 (global-flycheck-mode)
 
 ;; Set up Company.
-(with-eval-after-load 'company
+(with-eval-after-load "company"
   (setq company-idle-delay 0.1
         company-minimum-prefix-length 2)
   (add-to-list 'company-backends 'company-omnisharp))
 
 ;; Set up Projectile.
-(with-eval-after-load 'projectile
+(with-eval-after-load "projectile"
   ;; Make sure Projectile ignores irrelevant directories.
   (setq projectile-globally-ignored-directories
         (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
@@ -276,36 +279,36 @@
         projectile-require-project-root nil))
 
 ;; Enable Company and Projectile when any `prog-mode' is activated.
-(add-hook 'prog-mode-hook 'company-mode)
-(add-hook 'prog-mode-hook 'projectile-mode)
+(add-hook 'prog-mode-hook
+          '(lambda ()
+             (company-mode)
+             (projectile-mode)))
 
 ;; Use OmniSharp in C# buffers.
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
 
-(with-eval-after-load 'js2-mode
-  (setq js2-strict-missing-semi-warning nil))
-
 ;;;;------------------------------------
-;;;; Functions
+;;;; Functions.
 ;;;;------------------------------------
 
-(defun open-file-manager ()
+(defun init--open-file-manager ()
+  "Run the configured external file manager executable."
   (interactive)
   (call-process init--file-manager nil 0 nil init--file-manager-args))
 
-(defun open-terminal ()
+(defun init--open-terminal ()
+  "Run the configured external terminal executable."
   (interactive)
   (call-process init--terminal nil 0 nil init--terminal-args))
 
-(defvar other-window-buffer nil)
-(defun toggle-dual-window-view ()
-  (interactive)
+(defun init--toggle-dual-window-view ()
   "Toggle between displaying one window (normal) and two windows (side-by-side)."
+  (interactive)
   (if (eq (length (window-list)) 2)
       ;; Two windows open, so save the buffer that is open in the other window and close it, then
       ;; halve the frame width.
       (progn
-        (setq other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
+        (setq init--other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
         (delete-other-windows)
         (set-frame-size nil (/ (frame-width) 2) (frame-height)))
     (progn
@@ -313,9 +316,9 @@
       ;; in the other window.
       (set-frame-size nil (* (frame-width) 2) (frame-height))
       (split-window-right)
-      (when (buffer-live-p other-window-buffer)
+      (when (buffer-live-p init--other-window-buffer)
         (other-window 1)
-        (set-window-buffer (selected-window) other-window-buffer)
+        (set-window-buffer (selected-window) init--other-window-buffer)
         (other-window 1)))))
 
 (defun err-mode ()
@@ -351,7 +354,7 @@
      map)))
 
 ;;;;------------------------------------
-;;;; Key-bindings
+;;;; Key-bindings.
 ;;;;------------------------------------
 
 ;; Shortcut to align lines by regexp.
@@ -365,10 +368,10 @@
 
 ;; Toggle double frame view.
 (if (window-system)
-    (global-set-key (kbd "C-c d") 'toggle-dual-window-view))
+    (global-set-key (kbd "C-c d") 'init--toggle-dual-window-view))
 
 ;; Open current directory with the configured file manager.
-(global-set-key (kbd "C-c e") 'open-file-manager)
+(global-set-key (kbd "C-c e") 'init--open-file-manager)
 
 ;; Move point to a line quickly.
 (global-set-key (kbd "C-c g") 'goto-line)
@@ -392,9 +395,16 @@
 (global-set-key (kbd "C-c s") 'sort-lines)
 
 ;; Open terminal in current directory.
-(global-set-key (kbd "C-c t") 'open-terminal)
+(global-set-key (kbd "C-c t") 'init--open-terminal)
 
 ;; Delete active window.
 (global-set-key (kbd "C-c w") 'delete-window)
+
+;;;;------------------------------------
+;;;; Finalization.
+;;;;------------------------------------
+
+(let ((elapsed (float-time (time-subtract (current-time) init--start-time))))
+  (setq initial-scratch-message (format ";; Emacs initialized in %.3fs\n\n" elapsed)))
 
 ;;; init.el ends here
