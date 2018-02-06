@@ -31,11 +31,81 @@
 ;;; Code:
 
 ;;;;------------------------------------
-;;;; 1. Pre-initialization
+;;;; Constants.
 ;;;;------------------------------------
 
-;; Set initial window size (104 columns x 58 rows).
-(setq initial-frame-alist '((width . 104) (height . 58)))
+(defconst init--is-linux   (eq system-type 'gnu/linux))
+(defconst init--is-windows (eq system-type 'windows-nt))
+
+(defconst init--frame-width 104)
+(defconst init--frame-height 58)
+
+(defconst init--font (cond (init--is-linux   "Liberation Mono-9.0")
+                           (init--is-windows "Consolas-10.0")))
+
+(defconst init--indent-offset 2)
+(defconst init--line-width 100)
+
+(defconst init--file-manager (cond (init--is-linux   "thunar")
+                                   (init--is-windows "explorer")))
+(defconst init--file-manager-args ".")
+
+(defconst init--terminal "Cmder")
+(defconst init--terminal-args "/single")
+
+;;;;------------------------------------
+;;;; Initialization.
+;;;;------------------------------------
+
+;; Infinite GC threshold during setup to load faster...
+(setq gc-cons-threshold most-positive-fixnum)
+;; ...then set it to something sane.
+(add-hook 'after-init-hook '(lambda () (setq gc-cons-threshold 2000000)))
+
+;; Separate 'custom.el' file (otherwise it will be appended to this file).
+(setq custom-file (concat user-emacs-directory "custom.el"))
+
+;; Prefer UTF-8 and Unix line endings.
+(prefer-coding-system 'utf-8)
+(setq-default buffer-file-coding-system 'utf-8-unix)
+
+;;;;------------------------------------
+;;;; Packages.
+;;;;------------------------------------
+
+(require 'package)
+
+;; Enable MELPA package repostiory.
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+
+(package-initialize)
+
+;; Make sure we have downloaded the package archive metadata and installed all packages we need.
+(unless package-archive-contents
+  (package-refresh-contents)
+
+  ;; Install packages from (M)ELPA.
+  (dolist (it '(company
+                csharp-mode
+                diminish
+                flycheck
+                glsl-mode
+                groovy-mode
+                js2-mode
+                lua-mode
+                magit
+                multiple-cursors
+                omnisharp
+                projectile
+                spaceline
+                spacemacs-theme
+                web-mode))
+    (unless (package-installed-p it)
+      (package-install it))))
+
+;;;;------------------------------------
+;;;; User interface.
+;;;;------------------------------------
 
 ;; Disable GUI stuff that I don't want or need.
 (menu-bar-mode -1)
@@ -43,29 +113,80 @@
 (tool-bar-mode -1)
 (tooltip-mode -1)
 
+;; Disable fringes.
+(fringe-mode '(0 . 0))
+
+;; Set initial frame size.
+(setq initial-frame-alist `((width . ,init--frame-width) (height . ,init--frame-height)))
+
+;; Set up font if running in a window (not terminal).
+(if (window-system)
+    (set-frame-font (concat init--font ":antialias=subpixel")))
+
+;; Set frame title.
+(setq frame-title-format '("%b"))
+
 ;; No startup message and suppress the scratch buffer message.
 (setq inhibit-startup-message t
       initial-scratch-message nil)
 
-;; Separate 'custom.el' file (otherwise it will be appended to this file).
-(setq custom-file (concat user-emacs-directory "custom.el"))
-
-;; Increase GC threshold to run GC less often (default is 800000).
-(setq gc-cons-threshold 2000000)
-
-;; Variables used for making decisions during initialization.
-(defvar is-linux   (eq system-type 'gnu/linux))
-(defvar is-windows (eq system-type 'windows-nt))
-
-;;;;------------------------------------
-;;;; 2. Setup sane defaults
-;;;;------------------------------------
-
-;; Automatically reload files when changes are detected.
-(global-auto-revert-mode t)
+;; Don't blink the cursor.
+(blink-cursor-mode -1)
 
 ;; Display keyboard shortcuts quickly in the echo area.
 (setq echo-keystrokes 0.1)
+
+;; Custom bell function that inverts the mode line for a short period of time, making it flash once.
+(setq ring-bell-function (lambda ()
+                           (invert-face 'mode-line)
+                           (run-with-timer 0.05 nil 'invert-face 'mode-line))
+      visible-bell nil)
+
+;; Show column- and line numbers in mode line, as well as file size.
+(column-number-mode t)
+(line-number-mode t)
+(size-indication-mode t)
+
+;; Highlight long lines.
+(setq-default whitespace-line-column init--line-width
+              whitespace-style '(face tabs lines-tail))
+(global-whitespace-mode t)
+
+;; Highlight matching parentheses.
+(show-paren-mode t)
+
+;; Hide some modes from the mode line - I don't need to see them.
+(with-eval-after-load 'abbrev             (diminish 'abbrev-mode))
+(with-eval-after-load 'auto-fill-function (diminish 'auto-fill-function))
+(with-eval-after-load 'company            (diminish 'company-mode))
+(with-eval-after-load 'eldoc              (diminish 'eldoc-mode))
+(with-eval-after-load 'flycheck           (diminish 'flycheck-mode))
+(with-eval-after-load 'omnisharp          (diminish 'omnisharp-mode))
+(with-eval-after-load 'projectile         (diminish 'projectile-mode))
+(with-eval-after-load 'subword            (diminish 'subword-mode))
+(with-eval-after-load 'whitespace         (diminish 'global-whitespace-mode))
+;;(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode))
+
+;; Load and configure the theme.
+(setq spacemacs-theme-comment-bg nil)
+(load-theme 'spacemacs-light t)
+
+;; Fix for `whitespace-mode' when using the `spacemacs-light' theme.
+(set-face-attribute 'whitespace-line nil :background "#fae9c3" :foreground nil)
+
+;; Fancy mode line.
+(require 'spaceline-config)
+(spaceline-spacemacs-theme)
+
+;;;;------------------------------------
+;;;; Behavior.
+;;;;------------------------------------
+
+;; Don't require full yes or full no.
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; Automatically reload files when changes are detected.
+(global-auto-revert-mode t)
 
 ;; Use C-<space> to set mark and select text instead of shift.
 (setq shift-select-mode nil)
@@ -73,35 +194,18 @@
 ;; Delete selection (if any) when typing.
 (delete-selection-mode t)
 
-;; Show column- and line numbers in mode line, as well as file size.
-(line-number-mode t)
-(column-number-mode t)
-(size-indication-mode t)
-
-;; Don't require full yes or full no.
-(fset 'yes-or-no-p 'y-or-n-p)
-
-;; Display column guide at 100 chars and wordwrap to 100 chars with M-q.
-(setq-default fill-column 100
-              whitespace-line-column 100
-              whitespace-style '(face tabs lines-tail))
-
-(global-whitespace-mode)
+;; Word wrap long lines.
+(setq-default fill-column init--line-width)
 
 ;; Don't use tab characters.
 (setq-default indent-tabs-mode nil)
 
-;; Prefer UTF-8 and Unix line endings.
-(prefer-coding-system 'utf-8)
-(setq-default buffer-file-coding-system 'utf-8-unix)
-
 ;; Remove trailing whitespace from all lines on save (but make sure there's a linebreak at the end
 ;; of the file). Markdown files need to keep their trailing spaces so they're excluded.
-(setq require-final-newline t)
 (add-hook 'before-save-hook
-          (lambda ()
-            (unless (string= (file-name-extension buffer-file-name) "md")
-              (delete-trailing-whitespace))))
+          '(unless (string= (file-name-extension buffer-file-name) "md")
+             (delete-trailing-whitespace)))
+(setq require-final-newline t)
 
 ;; Match parentheses automatically.
 (electric-pair-mode t)
@@ -109,50 +213,101 @@
 ;; Stop on 'subwords' (point will stop on capital letters in single words).
 (global-subword-mode t)
 
-;; Store backup files in /tmp/ and don't create .#-files.
+;; Store backup files in the temp directory and don't create .#-files.
 (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
       backup-directory-alist `((".*" . ,temporary-file-directory))
       backup-by-copying t
       create-lockfiles nil)
 
-;; Setup sane scrolling.
-(setq mouse-wheel-follow-mouse 't
+;; Set up sane scrolling.
+(setq mouse-wheel-follow-mouse t
       mouse-wheel-progressive-speed nil
       mouse-wheel-scroll-amount '(3 ((shift) . 1)))
 (setq scroll-step 1)
 
-;; Use C++ mode in .h-files.
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+;; Mode mappings.
+(dolist (it '(("\\.h\\'"   . c++-mode)  ; <-- Emacs will use `c-mode' in .h-files without this.
+              ("\\.js\\'"  . js2-mode)
+              ("\\.jsx\\'" . web-mode)
+              ("\\.ts\\'"  . web-mode)
+              ("\\.tsx\\'" . web-mode)))
+  (add-to-list 'auto-mode-alist it))
 
-;; Basic indentation stuff.
+;; Indentation stuff.
+(setq-default c-basic-offset       init--indent-offset
+              css-indent-offset    init--indent-offset
+              js-indent-level      init--indent-offset
+              python-indent-offset init--indent-offset)
+
+(with-eval-after-load 'groovy-mode
+  (setq groovy-indent-offset init--indent-offset))
+
+(with-eval-after-load 'web-mode
+  (setq web-mode-markup-indent-offset init--indent-offset
+        web-mode-code-indent-offset   init--indent-offset
+        web-mode-css-indent-offset    init--indent-offset))
+
 (c-set-offset 'innamespace [0])
-(setq-default c-basic-offset 2)
-(setq-default css-indent-offset 2)
-(setq-default js-indent-level 2)
-(setq-default python-indent-offset 2)
+
+;; Enable Flycheck for on-the-fly syntax checking.
+(global-flycheck-mode)
+
+;; Set up Company.
+(with-eval-after-load 'company
+  (setq company-idle-delay 0.1
+        company-minimum-prefix-length 2)
+  (add-to-list 'company-backends 'company-omnisharp))
+
+;; Set up Projectile.
+(with-eval-after-load 'projectile
+  ;; Make sure Projectile ignores irrelevant directories.
+  (setq projectile-globally-ignored-directories
+        (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
+                projectile-globally-ignored-directories)
+
+        projectile-globally-ignored-files
+        (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~")
+                projectile-globally-ignored-files)
+
+        ;; Use native (to Emacs) indexing.
+        projectile-indexing-method 'alien
+
+        ;; Use Projectile without project files.n
+        projectile-require-project-root nil))
+
+;; Enable Company and Projectile when any `prog-mode' is activated.
+(add-hook 'prog-mode-hook 'company-mode)
+(add-hook 'prog-mode-hook 'projectile-mode)
+
+;; Use OmniSharp in C# buffers.
+(add-hook 'csharp-mode-hook 'omnisharp-mode)
+
+(with-eval-after-load 'js2-mode
+  (setq js2-strict-missing-semi-warning nil))
 
 ;;;;------------------------------------
-;;;; 3. Functions
+;;;; Functions
 ;;;;------------------------------------
 
-(defun packages-install (packages)
-  "Install the specified PACKAGES, unless already installed."
-  (unless package-archive-contents
-    (package-refresh-contents))
-  (dolist (it packages)
-    (unless (package-installed-p it)
-      (package-install it))))
+(defun open-file-manager ()
+  (interactive)
+  (call-process init--file-manager nil 0 nil init--file-manager-args))
+
+(defun open-terminal ()
+  (interactive)
+  (call-process init--terminal nil 0 nil init--terminal-args))
 
 (defvar other-window-buffer nil)
-(defun toggle-two-window-view ()
-  "Toggle between displaying one frame (normal) and two frames (side-by-side)."
+(defun toggle-dual-window-view ()
+  (interactive)
+  "Toggle between displaying one window (normal) and two windows (side-by-side)."
   (if (eq (length (window-list)) 2)
       ;; Two windows open, so save the buffer that is open in the other window and close it, then
       ;; halve the frame width.
       (progn
         (setq other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
-        (set-frame-size nil (/ (frame-width) 2) (frame-height))
-        (delete-other-windows))
+        (delete-other-windows)
+        (set-frame-size nil (/ (frame-width) 2) (frame-height)))
     (progn
       ;; One (probably) window open, so double the frame width and display the last shown buffer
       ;; in the other window.
@@ -163,104 +318,6 @@
         (set-window-buffer (selected-window) other-window-buffer)
         (other-window 1)))))
 
-;;;;------------------------------------
-;;;; 4. Appearance
-;;;;------------------------------------
-
-;; Set frame title.
-(setq frame-title-format '("%b"))
-
-;; Set up font if running in a window (not terminal).
-(when (window-system)
-  (if is-linux
-      (set-frame-font "Liberation Mono-9.0:antialias=subpixel"))
-  (if is-windows
-      (set-frame-font "Consolas-10.0:antialias=subpixel")))
-
-;; Custom bell function that inverts mode-line for a short period of time.
-(setq ring-bell-function (lambda ()
-                           (invert-face 'mode-line)
-                           (run-with-timer 0.05 nil 'invert-face 'mode-line))
-      visible-bell nil)
-
-;; Don't blink the cursor.
-(blink-cursor-mode -1)
-
-;; Highlight matching parentheses.
-(show-paren-mode t)
-
-;; Disable fringes.
-(fringe-mode '(0 . 0))
-
-;;;;------------------------------------
-;;;; 5. Packages
-;;;;------------------------------------
-
-(require 'package)
-
-;; Enable MELPA package repostiory.
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-
-(package-initialize)
-
-;; Install packages from (M)ELPA.
-(packages-install
- '(company
-   company-jedi
-   csharp-mode
-   diminish
-   flycheck
-   glsl-mode
-   groovy-mode
-   js2-mode
-   lua-mode
-   magit
-   markdown-mode
-   multiple-cursors
-   omnisharp
-   projectile
-   spaceline
-   spacemacs-theme
-   web-mode))
-
-;;;;------------------------------------
-;;;; 5. Key-bindings
-;;;;------------------------------------
-
-;; Shortcut to align lines by regexp.
-(global-set-key (kbd "C-c a") 'align-regexp)
-
-;; Switch between two buffers with C-c b
-(global-set-key (kbd "C-c b") (lambda () (interactive) (switch-to-buffer nil)))
-
-;; Comment easily.
-(global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
-
-;; Toggle double frame view.
-(if (window-system)
-    (global-set-key (kbd "C-c d")
-                    (lambda () (interactive) (toggle-two-window-view))))
-
-;; Open current directory with a sensible file browser.
-(if is-linux
-    (global-set-key (kbd "C-c e")
-                    (lambda () (interactive) (call-process "thunar" nil 0 nil "."))))
-(if is-windows
-    (global-set-key (kbd "C-c e")
-                    (lambda () (interactive) (call-process "explorer" nil 0 nil "."))))
-
-;; Go to line.
-(global-set-key (kbd "C-c g") 'goto-line)
-
-;; Toggle syntax highlighting.
-(global-set-key (kbd "C-c h") 'global-font-lock-mode)
-
-;; Indent region.
-(global-set-key (kbd "C-c i") 'indent-region)
-
-;; Close automatically opened window (from, e.g., search).
-(global-set-key (kbd "C-c q") (lambda () (interactive) (delete-other-windows-vertically)))
-
 (defun err-mode ()
   "Enter error-cycling key-binding mode for cycling between errors."
   (interactive)
@@ -270,60 +327,6 @@
      (define-key map (kbd "e") (lambda () (interactive) (err-mode) (previous-error)))
      (define-key map (kbd "r") (lambda () (interactive) (err-mode) (next-error)))
      map)))
-
-;; Enter error cycling mode.
-(global-set-key (kbd "C-c r") 'err-mode)
-
-;; Sort lines.
-(global-set-key (kbd "C-c s") 'sort-lines)
-
-;; Open terminal in current directory.
-(if is-windows
-    (global-set-key (kbd "C-c t")
-                    (lambda () (interactive) (call-process "Cmder" nil 0 nil "/single"))))
-
-;; Delete active window.
-(global-set-key (kbd "C-c w") 'delete-window)
-
-;;;;------------------------------------
-;;;; 7. Package setup
-;;;;------------------------------------
-
-;;; company
-(add-hook 'prog-mode-hook 'global-company-mode)
-(eval-after-load 'company
-  '(setq company-idle-delay 0.1
-         company-minimum-prefix-length 2
-         company-tooltip-align-annotations t))
-
-;;; company-jedi
-(eval-after-load 'company '(add-to-list 'company-backends 'company-jedi))
-
-;;; diminish
-(eval-after-load 'abbrev             '(diminish 'abbrev-mode))
-(eval-after-load 'auto-fill-function '(diminish 'auto-fill-function))
-(eval-after-load 'company            '(diminish 'company-mode))
-(eval-after-load 'eldoc              '(diminish 'eldoc-mode))
-(eval-after-load 'flycheck           '(diminish 'flycheck-mode))
-(eval-after-load 'omnisharp          '(diminish 'omnisharp-mode))
-(eval-after-load 'projectile         '(diminish 'projectile-mode))
-(eval-after-load 'subword            '(diminish 'subword-mode))
-(eval-after-load 'whitespace         '(diminish 'global-whitespace-mode))
-
-(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode))
-
-;;; flycheck
-(global-flycheck-mode)
-
-;;; groovy-mode
-(eval-after-load 'groovy-mode '(setq groovy-indent-offset 2))
-
-;;; js2-mode
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-(eval-after-load 'js2-mode '(setq js2-strict-missing-semi-warning nil))
-
-;;; multiple-cursors
-(require 'multiple-cursors)
 
 ;; Helper functions for multiple-cursors (while remaining in multiple-cursors key-binding mode).
 (defun mc-cycle-backward             () (interactive) (mc-mode) (mc/cycle-backward))
@@ -347,55 +350,51 @@
      (define-key map (kbd "n") 'mc-mark-next-like-this-symbol)
      map)))
 
+;;;;------------------------------------
+;;;; Key-bindings
+;;;;------------------------------------
+
+;; Shortcut to align lines by regexp.
+(global-set-key (kbd "C-c a") 'align-regexp)
+
+;; Switch back and forth between the two last buffers.
+(global-set-key (kbd "C-c b") 'mode-line-other-buffer)
+
+;; Comment easily.
+(global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
+
+;; Toggle double frame view.
+(if (window-system)
+    (global-set-key (kbd "C-c d") 'toggle-dual-window-view))
+
+;; Open current directory with the configured file manager.
+(global-set-key (kbd "C-c e") 'open-file-manager)
+
+;; Move point to a line quickly.
+(global-set-key (kbd "C-c g") 'goto-line)
+
+;; Toggle syntax highlighting.
+(global-set-key (kbd "C-c h") 'global-font-lock-mode)
+
+;; Indent region.
+(global-set-key (kbd "C-c i") 'indent-region)
+
 ;; Shortcut for entering multiple-cursors key-binding mode.
 (global-set-key (kbd "C-c m") 'mc-mode)
 
-;;; omnisharp
-(add-hook 'csharp-mode-hook 'omnisharp-mode)
-(eval-after-load 'company '(add-to-list 'company-backends 'company-omnisharp))
+;; Close automatically opened window (from, e.g., search).
+(global-set-key (kbd "C-c q") 'delete-other-windows-vertically)
 
-;;; projectile
-(eval-after-load 'projectile
-  '(progn
-     ;; Make sure Projectile ignores irrelevant directories.
-     (setq projectile-globally-ignored-directories
-           (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
-                   projectile-globally-ignored-directories)
+;; Enter error cycling mode.
+(global-set-key (kbd "C-c r") 'err-mode)
 
-           projectile-globally-ignored-files
-           (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~")
-                   projectile-globally-ignored-files))
+;; Sort lines.
+(global-set-key (kbd "C-c s") 'sort-lines)
 
-     ;; Use native (to Emacs) indexing.
-     (setq projectile-indexing-method 'native)
+;; Open terminal in current directory.
+(global-set-key (kbd "C-c t") 'open-terminal)
 
-     ;; Use Projectile without project files.
-     (setq projectile-require-project-root nil)))
-
-;; Enable Projectile everywhere.
-(projectile-mode)
-
-;;; spaceline
-(require 'spaceline-config)
-(spaceline-spacemacs-theme)
-
-;;; spacemacs-theme
-(require 'spacemacs-common)
-(setq spacemacs-theme-comment-bg nil)
-(load-theme 'spacemacs-light t)
-
-;; Fix for whitespace-mode.
-(set-face-attribute 'whitespace-line nil :background "#fae9c3" :foreground nil)
-
-;;; web-mode
-(require 'web-mode)
-(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.ts\\'"  . web-mode))
-(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
-
-(with-eval-after-load 'web-mode
-  '(setq web-mode-markup-indent-offset 2
-         web-mode-code-indent-offset   2
-         web-mode-css-indent-offset    2))
+;; Delete active window.
+(global-set-key (kbd "C-c w") 'delete-window)
 
 ;;; init.el ends here
