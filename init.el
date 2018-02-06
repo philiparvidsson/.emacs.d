@@ -133,9 +133,8 @@
 ;; Set frame title.
 (setq frame-title-format '("%b"))
 
-;; No startup message and suppress the scratch buffer message.
-(setq inhibit-startup-message t
-      initial-scratch-message nil)
+;; No startup message or welcome screen.
+(setq inhibit-startup-message t)
 
 ;; Don't blink the cursor.
 (blink-cursor-mode -1)
@@ -188,7 +187,7 @@
 ;;;; Behavior.
 ;;;;------------------------------------
 
-;; Don't require full yes or full no.
+;; Don't require full yes or full no, just y or n.
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; Automatically reload files when changes are detected.
@@ -252,14 +251,14 @@
 
 (c-set-offset 'innamespace [0])
 
-;; Enable Flycheck for on-the-fly syntax checking.
-(global-flycheck-mode)
-
 ;; Set up Company.
 (with-eval-after-load "company"
   (setq company-idle-delay 0.1
         company-minimum-prefix-length 2)
   (add-to-list 'company-backends 'company-omnisharp))
+
+;; Enable Flycheck for on-the-fly syntax checking.
+(with-eval-after-load "flycheck" (global-flycheck-mode))
 
 ;; Set up Projectile.
 (with-eval-after-load "projectile"
