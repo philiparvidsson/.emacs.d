@@ -55,7 +55,6 @@
 (defconst init--terminal "Cmder")
 (defconst init--terminal-args "/single")
 
-
 ;;;;------------------------------------
 ;;;; Variables.
 ;;;;------------------------------------
