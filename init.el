@@ -331,14 +331,31 @@
         (set-window-buffer (selected-window) init--other-window-buffer)
         (other-window 1)))))
 
-(defun err-mode ()
+(defun init--error-exit ()
+  "Exit error cycling key map and close other window vertically."
+  (interactive)
+  (delete-other-windows-vertically))
+
+(defun init--error-prev ()
+  "Active error cycling key map and go to the previous error."
+  (interactive)
+  (init--error-mode)
+  (previous-error))
+
+(defun init--error-next ()
+  "Active error cycling key map and go to the next error."
+  (interactive)
+  (init--error-mode)
+  (next-error))
+
+(defun init--error-mode ()
   "Enter error-cycling key-binding mode for cycling between errors."
   (interactive)
   (set-transient-map
    (let ((map (make-sparse-keymap)))
-     (define-key map (kbd "<escape>") (lambda () (interactive) (delete-other-windows-vertically)))
-     (define-key map (kbd "e") (lambda () (interactive) (err-mode) (previous-error)))
-     (define-key map (kbd "r") (lambda () (interactive) (err-mode) (next-error)))
+     (define-key map (kbd "<escape>") 'init--error-exit)
+     (define-key map (kbd "e")        'init--error-prev)
+     (define-key map (kbd "r")        'init--error-next)
      map)))
 
 ;; Helper functions for multiple-cursors (while remaining in multiple-cursors key-binding mode).
@@ -406,6 +423,9 @@
 
 ;; Open terminal in current directory.
 (global-set-key (kbd "C-c t") 'init--open-terminal)
+
+;; Easy access to Magit.
+(global-set-key (kbd "C-c v") 'magit-status)
 
 ;;;;------------------------------------
 ;;;; Finalization.
