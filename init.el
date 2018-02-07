@@ -275,10 +275,7 @@
         (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~")
                 projectile-globally-ignored-files)
 
-        ;; Use native (to Emacs) indexing.
-        projectile-indexing-method 'native
-
-        ;; Use Projectile without project files.n
+        ;; Enable Projectile to be used anywhere (even without project files).
         projectile-require-project-root nil))
 
 ;; Enable Company and Projectile when any `prog-mode' is activated.
