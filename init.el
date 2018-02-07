@@ -335,16 +335,16 @@
 (defun init--error-prev ()
   "Active error cycling key map and go to the previous error."
   (interactive)
-  (init--error-mode)
+  (init--error-keymap)
   (previous-error))
 
 (defun init--error-next ()
   "Active error cycling key map and go to the next error."
   (interactive)
-  (init--error-mode)
+  (init--error-keymap)
   (next-error))
 
-(defun init--error-mode ()
+(defun init--error-keymap ()
   "Enter error-cycling key-binding mode for cycling between errors."
   (interactive)
   (set-transient-map
@@ -355,14 +355,14 @@
      map)))
 
 ;; Helper functions for multiple-cursors (while remaining in multiple-cursors key-binding mode).
-(defun mc-cycle-backward             () (interactive) (mc-mode) (mc/cycle-backward))
-(defun mc-cycle-forward              () (interactive) (mc-mode) (mc/cycle-forward))
-(defun mc-insert-numbers             () (interactive) (mc-mode) (mc/insert-numbers 1))
-(defun mc-mark-all-like-this         () (interactive) (mc-mode) (mc/mark-all-dwim (use-region-p)))
-(defun mc-mark-next-like-this        () (interactive) (mc-mode) (mc/mark-next-like-this 1))
-(defun mc-mark-next-like-this-symbol () (interactive) (mc-mode) (mc/mark-next-like-this-symbol 1))
+(defun mc-cycle-backward             () (interactive) (init--multiple-cursors-keymap) (mc/cycle-backward))
+(defun mc-cycle-forward              () (interactive) (init--multiple-cursors-keymap) (mc/cycle-forward))
+(defun mc-insert-numbers             () (interactive) (init--multiple-cursors-keymap) (mc/insert-numbers 1))
+(defun mc-mark-all-like-this         () (interactive) (init--multiple-cursors-keymap) (mc/mark-all-dwim (use-region-p)))
+(defun mc-mark-next-like-this        () (interactive) (init--multiple-cursors-keymap) (mc/mark-next-like-this 1))
+(defun mc-mark-next-like-this-symbol () (interactive) (init--multiple-cursors-keymap) (mc/mark-next-like-this-symbol 1))
 
-(defun mc-mode ()
+(defun init--multiple-cursors-keymap ()
   "Enter multiple-cursors key-binding mode for easy access."
   (interactive)
   (set-transient-map
@@ -406,7 +406,7 @@
 (global-set-key (kbd "C-c i") 'indent-region)
 
 ;; Shortcut for entering multiple-cursors key-binding mode.
-(global-set-key (kbd "C-c m") 'mc-mode)
+(global-set-key (kbd "C-c m") 'init--multiple-cursors-keymap)
 
 ;; Close automatically opened window (from, e.g., search).
 (global-set-key (kbd "C-c q") 'delete-other-windows-vertically)
