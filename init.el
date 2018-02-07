@@ -67,7 +67,8 @@
 ;;;; Initialization.
 ;;;;------------------------------------
 
-;; Disable GC during initialization and then enable it again when we're done.
+;; Disable GC during initialization and then enable it again when we're done. Speeds up
+;; initialization somewhat.
 (setq gc-cons-threshold most-positive-fixnum)
 (add-hook 'after-init-hook '(lambda () (setq gc-cons-threshold 2000000)))
 
@@ -292,6 +293,9 @@
 
 ;; Use Rainbow mode when `web-mode' is activated.
 (add-hook 'web-mode-hook 'rainbow-mode)
+
+;; Disable warnings for missing semicolons when using `js2-mode'.
+(setq js2-strict-missing-semi-warning nil)
 
 ;;;;------------------------------------
 ;;;; Functions.
