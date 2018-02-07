@@ -423,6 +423,12 @@
 ;; Easy access to Magit.
 (global-set-key (kbd "C-c v") 'magit-status)
 
+;; Move faster through text when holding the shift key.
+(global-set-key (kbd "C-S-b") 'left-word)
+(global-set-key (kbd "C-S-f") 'right-word)
+(global-set-key (kbd "C-S-n") 'forward-paragraph)
+(global-set-key (kbd "C-S-p") 'backward-paragraph)
+
 ;;;;------------------------------------
 ;;;; Finalization.
 ;;;;------------------------------------
