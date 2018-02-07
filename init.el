@@ -104,11 +104,15 @@
                 multiple-cursors
                 omnisharp
                 projectile
+                rainbow-mode
                 spaceline
                 spacemacs-theme
                 web-mode))
     (unless (package-installed-p it)
       (package-install it))))
+
+(require 'multiple-cursors)
+(require 'spaceline-config)
 
 ;;;;------------------------------------
 ;;;; User interface.
@@ -168,6 +172,7 @@
 (with-eval-after-load "flycheck"           (diminish 'flycheck-mode))
 (with-eval-after-load "omnisharp"          (diminish 'omnisharp-mode))
 (with-eval-after-load "projectile"         (diminish 'projectile-mode))
+(with-eval-after-load "rainbow-mode"       (diminish 'rainbow-mode))
 (with-eval-after-load "subword"            (diminish 'subword-mode))
 (with-eval-after-load "whitespace"         (diminish 'global-whitespace-mode))
 ;;(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode))
@@ -180,7 +185,6 @@
 (set-face-attribute 'whitespace-line nil :background "#fae9c3" :foreground nil)
 
 ;; Fancy mode line.
-(require 'spaceline-config)
 (spaceline-spacemacs-theme)
 
 ;;;;------------------------------------
@@ -272,7 +276,7 @@
                 projectile-globally-ignored-files)
 
         ;; Use native (to Emacs) indexing.
-        projectile-indexing-method 'alien
+        projectile-indexing-method 'native
 
         ;; Use Projectile without project files.n
         projectile-require-project-root nil))
@@ -285,6 +289,9 @@
 
 ;; Use OmniSharp in C# buffers.
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
+
+;; Use Rainbow mode when `web-mode' is activated.
+(add-hook 'web-mode-hook 'rainbow-mode)
 
 ;;;;------------------------------------
 ;;;; Functions.
