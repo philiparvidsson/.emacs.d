@@ -42,8 +42,10 @@
 (defconst init--frame-width 104)
 (defconst init--frame-height 58)
 
-(defconst init--font (cond (init--is-linux   "Liberation Mono-9.0")
-                           (init--is-windows "Consolas-10.0")))
+(defconst init--fonts (cond (init--is-linux   '("Liberation Mono-9.0"))
+                            (init--is-windows '("Consolas-10.0"
+                                                "Symbola monospacified for Consolas-10.0"
+                                                "SimSun-10.0"))))
 
 (defconst init--indent-offset 2)
 (defconst init--line-width 100)
@@ -130,9 +132,12 @@
 ;; Set initial frame size.
 (setq initial-frame-alist `((width . ,init--frame-width) (height . ,init--frame-height)))
 
-;; Set up font if running in a window (not terminal).
+;; Set up fonts if running in a window (not terminal).
 (if (window-system)
-    (set-frame-font (concat init--font ":antialias=subpixel")))
+    (dolist (fontset (fontset-list))
+      (dolist (font (reverse init--fonts))
+        (let ((fs (font-spec :name (concat font ":antialias=subpixel"))))
+          (set-fontset-font fontset 'unicode fs nil 'prepend)))))
 
 ;; Set frame title.
 (setq frame-title-format '("%b"))
