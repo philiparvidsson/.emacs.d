@@ -100,6 +100,7 @@
                 flycheck
                 glsl-mode
                 groovy-mode
+                ivy
                 js2-mode
                 lua-mode
                 magit
@@ -135,8 +136,8 @@
 ;; Set up fonts if running in a window (not terminal).
 (if (window-system)
     (dolist (fontset (fontset-list))
-      (dolist (font (reverse init--fonts))
-        (let ((fs (font-spec :name (concat font ":antialias=subpixel"))))
+      (dolist (font-name (reverse init--fonts))
+        (let ((fs (font-spec :name (concat font-name ":antialias=subpixel"))))
           (set-fontset-font fontset 'unicode fs nil 'prepend)))))
 
 ;; Set frame title.
@@ -271,17 +272,21 @@
 
 ;; Set up Projectile for easy finding of files in the same project.
 (with-eval-after-load "projectile"
-  ;; Make sure Projectile ignores irrelevant directories.
-  (setq projectile-globally-ignored-directories
-        (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
-                projectile-globally-ignored-directories)
+  (setq
+   ;; Use Ivy for finding files in Projectiles.
+   projectile-completion-system 'ivy
 
-        projectile-globally-ignored-files
-        (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~")
-                projectile-globally-ignored-files)
+   ;; Make sure Projectile ignores irrelevant directories.
+   projectile-globally-ignored-directories
+   (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
+           projectile-globally-ignored-directories)
 
-        ;; Enable Projectile to be used anywhere (even without project files).
-        projectile-require-project-root nil))
+   projectile-globally-ignored-files
+   (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~")
+           projectile-globally-ignored-files)
+
+   ;; Enable Projectile to be used anywhere (even without project files).
+   projectile-require-project-root nil))
 
 ;; Enable Company and Projectile when any `prog-mode' is activated.
 (add-hook 'prog-mode-hook
