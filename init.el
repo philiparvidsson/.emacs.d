@@ -303,6 +303,9 @@
 ;; Disable warnings for missing semicolons when using `js2-mode'.
 (setq js2-strict-missing-semi-warning nil)
 
+;; Don't indent on yank in `web-mode'.
+(setq web-mode-enable-auto-indentation nil)
+
 ;;;;------------------------------------
 ;;;; Functions.
 ;;;;------------------------------------
