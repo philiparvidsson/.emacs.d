@@ -100,6 +100,7 @@
                 flycheck
                 glsl-mode
                 groovy-mode
+                hydra
                 ivy
                 js2-mode
                 lua-mode
@@ -266,7 +267,8 @@
 
 ;; Set up Company for auto-completion when typing.
 (with-eval-after-load "company"
-  (setq company-idle-delay 0.1
+  (setq company-dabbrev-downcase nil
+        company-idle-delay 0.1
         company-minimum-prefix-length 2)
   (add-to-list 'company-backends 'company-omnisharp))
 
@@ -340,55 +342,6 @@
         (set-window-buffer (selected-window) init--other-window-buffer)
         (other-window 1)))))
 
-(defun init--error-exit ()
-  "Exit error cycling key map and close other window vertically."
-  (interactive)
-  (delete-other-windows-vertically))
-
-(defun init--error-prev ()
-  "Active error cycling key map and go to the previous error."
-  (interactive)
-  (init--error-keymap)
-  (previous-error))
-
-(defun init--error-next ()
-  "Active error cycling key map and go to the next error."
-  (interactive)
-  (init--error-keymap)
-  (next-error))
-
-(defun init--error-keymap ()
-  "Enter error-cycling key-binding mode for cycling between errors."
-  (interactive)
-  (set-transient-map
-   (let ((map (make-sparse-keymap)))
-     (define-key map (kbd "<escape>") 'init--error-exit)
-     (define-key map (kbd "e")        'init--error-prev)
-     (define-key map (kbd "r")        'init--error-next)
-     map)))
-
-;; Helper functions for multiple-cursors (while remaining in multiple-cursors key-binding mode).
-(defun mc-cycle-backward             () (interactive) (init--multiple-cursors-keymap) (mc/cycle-backward))
-(defun mc-cycle-forward              () (interactive) (init--multiple-cursors-keymap) (mc/cycle-forward))
-(defun mc-insert-numbers             () (interactive) (init--multiple-cursors-keymap) (mc/insert-numbers 1))
-(defun mc-mark-all-like-this         () (interactive) (init--multiple-cursors-keymap) (mc/mark-all-dwim (use-region-p)))
-(defun mc-mark-next-like-this        () (interactive) (init--multiple-cursors-keymap) (mc/mark-next-like-this 1))
-(defun mc-mark-next-like-this-symbol () (interactive) (init--multiple-cursors-keymap) (mc/mark-next-like-this-symbol 1))
-
-(defun init--multiple-cursors-keymap ()
-  "Enter multiple-cursors key-binding mode for easy access."
-  (interactive)
-  (set-transient-map
-   (let ((map (make-sparse-keymap)))
-     (define-key map (kbd "<escape>") 'ignore)
-     (define-key map (kbd "a") 'mc-mark-all-like-this)
-     (define-key map (kbd "b") 'mc-cycle-backward)
-     (define-key map (kbd "f") 'mc-cycle-forward)
-     (define-key map (kbd "i") 'mc-insert-numbers)
-     (define-key map (kbd "m") 'mc-mark-next-like-this)
-     (define-key map (kbd "n") 'mc-mark-next-like-this-symbol)
-     map)))
-
 ;;;;------------------------------------
 ;;;; Key-bindings.
 ;;;;------------------------------------
@@ -418,14 +371,26 @@
 ;; Indent region.
 (global-set-key (kbd "C-c i") 'indent-region)
 
-;; Shortcut for entering multiple-cursors key-binding mode.
-(global-set-key (kbd "C-c m") 'init--multiple-cursors-keymap)
-
 ;; Close automatically opened window (from, e.g., search).
 (global-set-key (kbd "C-c q") 'delete-other-windows-vertically)
 
-;; Enter error cycling mode.
-(global-set-key (kbd "C-c r") 'err-mode)
+;; Hydra for navigating errors/search results.
+(defhydra hydra-error (global-map "C-c r")
+  "Navigate errors"
+  ("e" previous-error)
+  ("r" next-error)
+  ("<escape>" delete-other-windows-vertically :exit t))
+
+;; Hydra for `multiple-cursors'.
+(defhydra hydra-multiple-cursors (global-map "C-c m")
+  "Manage cursors"
+     ("a" mc/mark-all-like-this)
+     ("b" mc/cycle-backward)
+     ("f" mc/cycle-forward)
+     ("i" mc/insert-numbers)
+     ("m" mc/mark-next-like-this)
+     ("n" mc/mark-next-like-this-symbol)
+     ("<escape>" ignore :exit t))
 
 ;; Sort lines.
 (global-set-key (kbd "C-c s") 'sort-lines)
