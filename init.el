@@ -375,22 +375,22 @@
 (global-set-key (kbd "C-c q") 'delete-other-windows-vertically)
 
 ;; Hydra for navigating errors/search results.
-(defhydra hydra-error (global-map "C-c r")
+(defhydra hydra-navigate-errors (global-map "C-c r")
   "Navigate errors"
-  ("e" previous-error)
-  ("r" next-error)
+  ("e" (previous-error))
+  ("r" (next-error))
   ("<escape>" delete-other-windows-vertically :exit t))
 
 ;; Hydra for `multiple-cursors'.
 (defhydra hydra-multiple-cursors (global-map "C-c m")
   "Manage cursors"
-     ("a" mc/mark-all-like-this)
-     ("b" mc/cycle-backward)
-     ("f" mc/cycle-forward)
-     ("i" mc/insert-numbers)
-     ("m" mc/mark-next-like-this)
-     ("n" mc/mark-next-like-this-symbol)
-     ("<escape>" ignore :exit t))
+  ("a" (mc/mark-all-dwim (use-region-p)))
+  ("b" (mc/cycle-backward))
+  ("f" (mc/cycle-forward))
+  ("i" (mc/insert-numbers 1))
+  ("m" (mc/mark-next-like-this 1))
+  ("n" (mc/mark-next-like-this-symbol 1))
+  ("<escape>" ignore :exit t))
 
 ;; Sort lines.
 (global-set-key (kbd "C-c s") 'sort-lines)
