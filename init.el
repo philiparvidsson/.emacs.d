@@ -111,12 +111,14 @@
                 rainbow-mode
                 spaceline
                 spacemacs-theme
+                sublimity
                 web-mode))
     (unless (package-installed-p it)
       (package-install it))))
 
 (require 'multiple-cursors)
 (require 'spaceline-config)
+(require 'sublimity-scroll)
 
 ;;;;------------------------------------
 ;;;; User interface.
@@ -193,6 +195,11 @@
 
 ;; Fancy mode line.
 (spaceline-spacemacs-theme)
+
+;; Smooth scrolling.
+(sublimity-mode)
+(setq sublimity-scroll-drift-length 16
+      sublimity-scroll-weight       32)
 
 ;;;;------------------------------------
 ;;;; Behavior.
