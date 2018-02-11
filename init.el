@@ -109,7 +109,6 @@
                 omnisharp
                 projectile
                 rainbow-mode
-                spaceline
                 spacemacs-theme
                 sublimity
                 web-mode
@@ -118,7 +117,6 @@
       (package-install it))))
 
 (require 'multiple-cursors)
-(require 'spaceline-config)
 (require 'sublimity-scroll)
 
 ;;;;------------------------------------
@@ -173,7 +171,7 @@
 
 ;; When doing `kill-line', also remove whitespace from the beginning of the next line.
 (defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
-  "Clean up whitespace on `kill-line'."
+  "Clean up whitespace after `kill-line'."
   (if (not (bolp))
       (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
 
@@ -333,7 +331,7 @@
 (with-eval-after-load "auto-fill-function" (diminish 'auto-fill-function))
 (with-eval-after-load "company"            (diminish 'company-mode))
 (with-eval-after-load "eldoc"              (diminish 'eldoc-mode))
-(with-eval-after-load "flycheck"           (diminish 'flycheck-mode))
+;;(with-eval-after-load "flycheck"           (diminish 'flycheck-mode))
 (with-eval-after-load "omnisharp"          (diminish 'omnisharp-mode))
 (with-eval-after-load "projectile"         (diminish 'projectile-mode))
 (with-eval-after-load "rainbow-mode"       (diminish 'rainbow-mode))
@@ -351,9 +349,6 @@
                                   (set-face-attribute 'whitespace-line nil
                                                       :background "#fae9c3"
                                                       :foreground nil)))
-
-;; Fancy mode line.
-(spaceline-spacemacs-theme)
 
 ;; Smooth scrolling.
 (sublimity-mode)
