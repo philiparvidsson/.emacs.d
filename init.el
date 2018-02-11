@@ -51,8 +51,8 @@
 (defconst init--line-width 100)
 
 (defconst init--file-manager (cond (init--is-linux   "thunar")
-                                   (init--is-windows "explorer")))
-(defconst init--file-manager-args ".")
+                                   (init--is-windows "xyplorer")))
+(defconst init--file-manager-args '(file-name-directory buffer-file-name))
 
 (defconst init--terminal "Cmder")
 (defconst init--terminal-args "/single")
@@ -71,7 +71,7 @@
 ;; Disable GC during initialization and then enable it again when we're done. Speeds up
 ;; initialization somewhat.
 (setq gc-cons-threshold most-positive-fixnum)
-(add-hook 'after-init-hook '(lambda () (setq gc-cons-threshold 2000000)))
+(add-hook 'after-init-hook (lambda () (setq gc-cons-threshold 2000000)))
 
 ;; Separate 'custom.el' file (otherwise it will be appended to this file).
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -112,7 +112,8 @@
                 spaceline
                 spacemacs-theme
                 sublimity
-                web-mode))
+                web-mode
+                xah-math-input))
     (unless (package-installed-p it)
       (package-install it))))
 
@@ -121,85 +122,38 @@
 (require 'sublimity-scroll)
 
 ;;;;------------------------------------
-;;;; User interface.
+;;;; Functions.
 ;;;;------------------------------------
 
-;; Disable GUI stuff that I don't want or need.
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(tooltip-mode -1)
+(defun init--open-file-manager ()
+  "Run the configured external file manager executable."
+  (interactive)
+  (call-process init--file-manager nil 0 nil (eval init--file-manager-args)))
 
-;; Disable fringes.
-(fringe-mode 0)
+(defun init--open-terminal ()
+  "Run the configured external terminal executable."
+  (interactive)
+  (call-process init--terminal nil 0 nil (eval init--terminal-args)))
 
-;; Set initial frame size.
-(setq initial-frame-alist `((width . ,init--frame-width) (height . ,init--frame-height)))
-
-;; Set up fonts if running in a window (not terminal).
-(if (window-system)
-    (dolist (fontset (fontset-list))
-      (dolist (font-name (reverse init--fonts))
-        (let ((fs (font-spec :name (concat font-name ":antialias=subpixel"))))
-          (set-fontset-font fontset 'unicode fs nil 'prepend)))))
-
-;; Set frame title.
-(setq frame-title-format '("%b"))
-
-;; No startup message or welcome screen.
-(setq inhibit-startup-message t)
-
-;; Don't blink the cursor.
-(blink-cursor-mode -1)
-
-;; Display keyboard shortcuts quickly in the echo area.
-(setq echo-keystrokes 0.1)
-
-;; Custom bell function that inverts the mode line for a short period of time, making it flash once.
-(setq ring-bell-function (lambda ()
-                           (invert-face 'mode-line)
-                           (run-with-timer 0.05 nil 'invert-face 'mode-line)))
-
-;; Show column- and line numbers in mode line, as well as file size.
-(column-number-mode t)
-(line-number-mode t)
-(size-indication-mode t)
-
-;; Highlight long lines.
-(setq-default whitespace-line-column init--line-width
-              whitespace-style '(face tabs lines-tail))
-(global-whitespace-mode t)
-
-;; Highlight matching parentheses.
-(show-paren-mode t)
-
-;; Hide some modes from the mode line - I don't need to see them.
-(with-eval-after-load "abbrev"             (diminish 'abbrev-mode))
-(with-eval-after-load "auto-fill-function" (diminish 'auto-fill-function))
-(with-eval-after-load "company"            (diminish 'company-mode))
-(with-eval-after-load "eldoc"              (diminish 'eldoc-mode))
-(with-eval-after-load "flycheck"           (diminish 'flycheck-mode))
-(with-eval-after-load "omnisharp"          (diminish 'omnisharp-mode))
-(with-eval-after-load "projectile"         (diminish 'projectile-mode))
-(with-eval-after-load "rainbow-mode"       (diminish 'rainbow-mode))
-(with-eval-after-load "subword"            (diminish 'subword-mode))
-(with-eval-after-load "whitespace"         (diminish 'global-whitespace-mode))
-;;(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode))
-
-;; Load and configure the theme.
-(setq spacemacs-theme-comment-bg nil)
-(load-theme 'spacemacs-light t)
-
-;; Fix for `whitespace-mode' when using the `spacemacs-light' theme.
-(set-face-attribute 'whitespace-line nil :background "#fae9c3" :foreground nil)
-
-;; Fancy mode line.
-(spaceline-spacemacs-theme)
-
-;; Smooth scrolling.
-(sublimity-mode)
-(setq sublimity-scroll-drift-length 16
-      sublimity-scroll-weight       32)
+(defun init--toggle-dual-window-view ()
+  "Toggle between displaying one window (normal) and two windows (side-by-side)."
+  (interactive)
+  (if (eq (length (window-list)) 2)
+      ;; Two windows open, so save the buffer that is open in the other window and close it, then
+      ;; halve the frame width.
+      (progn
+        (setq init--other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
+        (delete-other-windows)
+        (set-frame-size nil (/ (frame-width) 2) (frame-height)))
+    (progn
+      ;; One (probably) window open, so double the frame width and display the last shown buffer
+      ;; in the other window.
+      (set-frame-size nil (* (frame-width) 2) (frame-height))
+      (split-window-right)
+      (when (buffer-live-p init--other-window-buffer)
+        (other-window 1)
+        (set-window-buffer (selected-window) init--other-window-buffer)
+        (other-window 1)))))
 
 ;;;;------------------------------------
 ;;;; Behavior.
@@ -217,6 +171,12 @@
 ;; Delete selection (if any) when typing.
 (delete-selection-mode t)
 
+;; When doing `kill-line', also remove whitespace from the beginning of the next line.
+(defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
+  "Clean up whitespace on `kill-line'."
+  (if (not (bolp))
+      (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
+
 ;; Word wrap long lines.
 (setq-default fill-column init--line-width)
 
@@ -226,9 +186,9 @@
 ;; Remove trailing whitespace from all lines on save (but make sure there's a linebreak at the end
 ;; of the file).  Markdown files need to keep their trailing spaces so they're excluded.
 (add-hook 'before-save-hook
-          '(lambda ()
-             (unless (string= (file-name-extension buffer-file-name) "md")
-               (delete-trailing-whitespace))))
+          (lambda ()
+            (unless (string= (file-name-extension buffer-file-name) "md")
+              (delete-trailing-whitespace))))
 (setq require-final-newline t)
 
 ;; Match parentheses automatically.
@@ -299,9 +259,9 @@
 
 ;; Enable Company and Projectile when any `prog-mode' is activated.
 (add-hook 'prog-mode-hook
-          '(lambda ()
-             (company-mode)
-             (projectile-mode)))
+          (lambda ()
+            (company-mode)
+            (projectile-mode)))
 
 ;; Use OmniSharp in C# buffers.
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
@@ -315,39 +275,92 @@
 ;; Don't indent on yank in `web-mode'.
 (setq web-mode-enable-auto-indentation nil)
 
+;; Use `xah-math-input' to let us easily type math symbols, etc.
+(global-xah-math-input-mode)
+
 ;;;;------------------------------------
-;;;; Functions.
+;;;; User interface.
 ;;;;------------------------------------
 
-(defun init--open-file-manager ()
-  "Run the configured external file manager executable."
-  (interactive)
-  (call-process init--file-manager nil 0 nil init--file-manager-args))
+;; Disable GUI stuff that I don't want or need.
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(tooltip-mode -1)
 
-(defun init--open-terminal ()
-  "Run the configured external terminal executable."
-  (interactive)
-  (call-process init--terminal nil 0 nil init--terminal-args))
+;; Disable fringes.
+(fringe-mode 0)
 
-(defun init--toggle-dual-window-view ()
-  "Toggle between displaying one window (normal) and two windows (side-by-side)."
-  (interactive)
-  (if (eq (length (window-list)) 2)
-      ;; Two windows open, so save the buffer that is open in the other window and close it, then
-      ;; halve the frame width.
-      (progn
-        (setq init--other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
-        (delete-other-windows)
-        (set-frame-size nil (/ (frame-width) 2) (frame-height)))
-    (progn
-      ;; One (probably) window open, so double the frame width and display the last shown buffer
-      ;; in the other window.
-      (set-frame-size nil (* (frame-width) 2) (frame-height))
-      (split-window-right)
-      (when (buffer-live-p init--other-window-buffer)
-        (other-window 1)
-        (set-window-buffer (selected-window) init--other-window-buffer)
-        (other-window 1)))))
+;; Set initial frame size.
+(setq initial-frame-alist `((width . ,init--frame-width) (height . ,init--frame-height)))
+
+;; Set up fonts if running in a window (not terminal).
+(if (window-system)
+    (dolist (fontset (fontset-list))
+      (dolist (font-name (reverse init--fonts))
+        (let ((fs (font-spec :name (concat font-name ":antialias=subpixel"))))
+          (set-fontset-font fontset 'unicode fs nil 'prepend)))))
+
+;; Set frame title.
+(setq frame-title-format '("%b"))
+
+;; No startup message or welcome screen.
+(setq inhibit-startup-message t)
+
+;; Don't blink the cursor.
+(blink-cursor-mode -1)
+
+;; Display keyboard shortcuts quickly in the echo area.
+(setq echo-keystrokes 0.1)
+
+;; Custom bell function that inverts the mode line for a short period of time, making it flash once.
+(setq ring-bell-function (lambda ()
+                           (invert-face 'mode-line)
+                           (run-with-timer 0.05 nil 'invert-face 'mode-line)))
+
+;; Show column- and line numbers in mode line, as well as file size.
+(column-number-mode t)
+(line-number-mode t)
+(size-indication-mode t)
+
+;; Highlight long lines.
+(setq whitespace-line-column init--line-width
+      whitespace-style '(face tabs lines-tail))
+(add-hook 'prog-mode-hook 'whitespace-mode)
+
+;; Highlight matching parentheses.
+(show-paren-mode t)
+
+;; Hide some modes from the mode line - I don't need to see them.
+(with-eval-after-load "abbrev"             (diminish 'abbrev-mode))
+(with-eval-after-load "auto-fill-function" (diminish 'auto-fill-function))
+(with-eval-after-load "company"            (diminish 'company-mode))
+(with-eval-after-load "eldoc"              (diminish 'eldoc-mode))
+(with-eval-after-load "flycheck"           (diminish 'flycheck-mode))
+(with-eval-after-load "omnisharp"          (diminish 'omnisharp-mode))
+(with-eval-after-load "projectile"         (diminish 'projectile-mode))
+(with-eval-after-load "rainbow-mode"       (diminish 'rainbow-mode))
+(with-eval-after-load "subword"            (diminish 'subword-mode))
+(with-eval-after-load "whitespace"         (diminish 'global-whitespace-mode))
+;;(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode))
+
+;; Load and configure the theme.
+(setq spacemacs-theme-comment-bg nil)
+(load-theme 'spacemacs-light t)
+
+;; Fix for `whitespace-mode' when using the `spacemacs-light' theme.
+(add-hook 'whitespace-mode-hook (lambda ()
+                                  (set-face-attribute 'whitespace-line nil
+                                                      :background "#fae9c3"
+                                                      :foreground nil)))
+
+;; Fancy mode line.
+(spaceline-spacemacs-theme)
+
+;; Smooth scrolling.
+(sublimity-mode)
+(setq sublimity-scroll-drift-length 8
+      sublimity-scroll-weight       32)
 
 ;;;;------------------------------------
 ;;;; Key-bindings.
