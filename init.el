@@ -263,7 +263,8 @@
 ;; Use OmniSharp in C# buffers.
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
 
-;; Use Rainbow mode when `web-mode' is activated.
+;; Use Rainbow mode when `css-mode' or `web-mode' is activated.
+(add-hook 'css-mode-hook 'rainbow-mode)
 (add-hook 'web-mode-hook 'rainbow-mode)
 
 ;; Disable warnings for missing semicolons when using `js2-mode'.
