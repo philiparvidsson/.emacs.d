@@ -258,10 +258,7 @@
    projectile-require-project-root nil))
 
 ;; Enable Company and Projectile when any `prog-mode' is activated.
-(add-hook 'prog-mode-hook
-          (lambda ()
-            (company-mode)
-            (projectile-mode)))
+(add-hook 'prog-mode-hook (lambda () (company-mode) (projectile-mode)))
 
 ;; Use OmniSharp in C# buffers.
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
