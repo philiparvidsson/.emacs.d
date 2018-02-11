@@ -52,10 +52,10 @@
 
 (defconst init--file-manager (cond (init--is-linux   "thunar")
                                    (init--is-windows "xyplorer")))
-(defconst init--file-manager-args '(file-name-directory buffer-file-name))
+(defconst init--file-manager-args '((file-name-directory buffer-file-name)))
 
 (defconst init--terminal "Cmder")
-(defconst init--terminal-args "/single")
+(defconst init--terminal-args '("/single"))
 
 ;;;;------------------------------------
 ;;;; Variables.
@@ -126,12 +126,14 @@
 (defun init--open-file-manager ()
   "Run the configured external file manager executable."
   (interactive)
-  (call-process init--file-manager nil 0 nil (eval init--file-manager-args)))
+  (let ((args (mapcar 'eval init--file-manager-args)))
+    (apply 'call-process (append (list init--file-manager nil 0 nil) args))))
 
 (defun init--open-terminal ()
   "Run the configured external terminal executable."
   (interactive)
-  (call-process init--terminal nil 0 nil (eval init--terminal-args)))
+  (let ((args (mapcar 'eval init--terminal-args)))
+    (apply 'call-process (append (list init--terminal nil 0 nil) args))))
 
 (defun init--toggle-dual-window-view ()
   "Toggle between displaying one window (normal) and two windows (side-by-side)."
@@ -331,7 +333,6 @@
 (with-eval-after-load "auto-fill-function" (diminish 'auto-fill-function))
 (with-eval-after-load "company"            (diminish 'company-mode))
 (with-eval-after-load "eldoc"              (diminish 'eldoc-mode))
-;;(with-eval-after-load "flycheck"           (diminish 'flycheck-mode))
 (with-eval-after-load "omnisharp"          (diminish 'omnisharp-mode))
 (with-eval-after-load "projectile"         (diminish 'projectile-mode))
 (with-eval-after-load "rainbow-mode"       (diminish 'rainbow-mode))
