@@ -111,6 +111,7 @@
                 rainbow-mode
                 spacemacs-theme
                 sublimity
+                swiper
                 web-mode
                 xah-math-input))
     (unless (package-installed-p it)
@@ -172,10 +173,10 @@
 (delete-selection-mode t)
 
 ;; When doing `kill-line', also remove whitespace from the beginning of the next line.
-(defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
-  "Clean up whitespace after `kill-line'."
-  (if (not (bolp))
-      (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
+(advice-add 'kill-line :after
+            (lambda (&optional arg)
+              (if (not (bolp))
+                  (delete-region (point) (progn (skip-chars-forward " \t") (point))))))
 
 ;; Word wrap long lines.
 (setq-default fill-column init--line-width)
@@ -421,6 +422,9 @@
 (global-set-key (kbd "C-S-f") 'right-word)
 (global-set-key (kbd "C-S-n") 'forward-paragraph)
 (global-set-key (kbd "C-S-p") 'backward-paragraph)
+
+;; Swiper is much better than i-search.
+(global-set-key (kbd "C-s") 'swiper)
 
 ;;;;------------------------------------
 ;;;; Finalization.
