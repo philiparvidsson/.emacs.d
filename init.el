@@ -110,7 +110,6 @@
                 projectile
                 rainbow-mode
                 spacemacs-theme
-                sublimity
                 swiper
                 web-mode
                 xah-math-input))
@@ -118,7 +117,6 @@
       (package-install it))))
 
 (require 'multiple-cursors)
-(require 'sublimity-scroll)
 
 ;;;;------------------------------------
 ;;;; Functions.
@@ -352,11 +350,6 @@
                                   (set-face-attribute 'whitespace-line nil
                                                       :background "#fae9c3"
                                                       :foreground nil)))
-
-;; Smooth scrolling.
-(sublimity-mode)
-(setq sublimity-scroll-drift-length 8
-      sublimity-scroll-weight       32)
 
 ;;;;------------------------------------
 ;;;; Key-bindings.
