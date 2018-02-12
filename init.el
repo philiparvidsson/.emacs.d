@@ -425,6 +425,7 @@
 
 ;; Swiper is much better than i-search.
 (global-set-key (kbd "C-s") 'swiper)
+(global-set-key (kbd "C-S-s") 'swiper-all)
 
 ;;;;------------------------------------
 ;;;; Finalization.
