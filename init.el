@@ -272,9 +272,6 @@
 ;; Don't indent on yank in `web-mode'.
 (setq web-mode-enable-auto-indentation nil)
 
-;; Use `xah-math-input' to let us easily type math symbols, etc.
-(global-xah-math-input-mode)
-
 ;;;;------------------------------------
 ;;;; User interface.
 ;;;;------------------------------------
@@ -324,6 +321,7 @@
 (setq whitespace-line-column init--line-width
       whitespace-style '(face tabs lines-tail))
 (add-hook 'prog-mode-hook 'whitespace-mode)
+(add-hook 'web-mode-hook 'whitespace-mode) ;; <-- Unsure why this is needed!
 
 ;; Highlight matching parentheses.
 (show-paren-mode t)
