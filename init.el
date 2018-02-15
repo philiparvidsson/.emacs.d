@@ -227,7 +227,7 @@
               web-mode-markup-indent-offset init--indent-offset)
 
 ;; Don't indent the first level inside namespaces.
-(c-set-offset 'innamespace [0])
+(c-set-offset 'innamespace 0)
 
 ;; Enable Flycheck for on-the-fly syntax checking.
 (with-eval-after-load "flycheck" (global-flycheck-mode))
