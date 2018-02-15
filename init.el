@@ -64,6 +64,9 @@
 ;; Used to remember the last active buffer in the other window in `init--toggle-dual-window-view'.
 (defvar init--other-window-buffer nil)
 
+;; Whether we're in presentation mode (F11-key toggles it).
+(defvar init--is-presentation-mode nil)
+
 ;;;;------------------------------------
 ;;;; Initialization.
 ;;;;------------------------------------
@@ -153,6 +156,15 @@
         (other-window 1)
         (set-window-buffer (selected-window) init--other-window-buffer)
         (other-window 1)))))
+
+(defun init--toggle-presentation-mode ()
+  "Toggle presentation (large text and fullscreen) mode."
+  (interactive)
+  (if init--is-presentation-mode
+      (text-scale-set 0)
+    (text-scale-set 4))
+  (toggle-frame-fullscreen)
+  (setq init--is-presentation-mode (not init--is-presentation-mode)))
 
 ;;;;------------------------------------
 ;;;; Behavior.
@@ -353,6 +365,9 @@
 ;;;;------------------------------------
 ;;;; Key-bindings.
 ;;;;------------------------------------
+
+;; Presentation mode.
+(global-set-key (kbd "<f11>") 'init--toggle-presentation-mode)
 
 ;; Shortcut to align lines by regexp.
 (global-set-key (kbd "C-c a") 'align-regexp)
