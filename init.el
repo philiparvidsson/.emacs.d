@@ -242,7 +242,13 @@
 (c-set-offset 'innamespace 0)
 
 ;; Enable Flycheck for on-the-fly syntax checking.
-(with-eval-after-load "flycheck" (global-flycheck-mode))
+;; Feb 16, 2018: I'm disabling `flycheck-mode' when `groovy-mode' is enabled because there seemse to
+;;               be a bug in startGroovy.bat on Windows 10 causing an infinite loop, effectively
+;;               hanging Flycheck. See https://github.com/flycheck/flycheck/issues/1395 for more
+;;               information.
+(with-eval-after-load "flycheck" (lambda ()
+                                   (setq flycheck-global-modes '(not 'groovy-mode))
+                                   (global-flycheck-mode)))
 
 ;; Set up Company for auto-completion when typing.
 (with-eval-after-load "company"
