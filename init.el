@@ -55,7 +55,7 @@
 (defconst init--file-manager-args '((file-name-directory buffer-file-name)))
 
 (defconst init--terminal "Cmder")
-(defconst init--terminal-args '("/single"))
+(defconst init--terminal-args '("/single" (file-name-directory buffer-file-name)))
 
 ;;;;------------------------------------
 ;;;; Variables.
