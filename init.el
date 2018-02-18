@@ -419,7 +419,7 @@
   ("i" (mc/insert-numbers 1))
   ("m" (mc/mark-next-like-this 1))
   ("n" (mc/mark-next-like-this-symbol 1))
-  ("<escape>" ignore :exit t))
+  ("<escape>" nil :exit t))
 
 ;; Sort lines.
 (global-set-key (kbd "C-c s") 'sort-lines)
