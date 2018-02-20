@@ -41,11 +41,11 @@
 (defconst init--is-linux   (eq system-type 'gnu/linux))
 (defconst init--is-windows (eq system-type 'windows-nt))
 
-;; Specifies the initial width and height of the Emacs frame.
+;; Specifies the initial width and height (in number of characters) of the Emacs frame.
 (defconst init--frame-width 104)
 (defconst init--frame-height 58)
 
-;; The font size to use.
+;; The font (in points) size to use.
 (defconst init--font-size "10.0")
 
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
@@ -154,11 +154,11 @@
   (let ((args (mapcar 'eval init--terminal-args)))
     (apply 'call-process (append (list init--terminal nil 0 nil) args))))
 
-(defun init--set-up-fonts (font-size)
+(defun init--set-fonts (font-names font-size)
   ;; Set up fonts if running in a window (not terminal).
   (if (window-system)
       (dolist (fontset (fontset-list))
-        (dolist (font-name (reverse init--fonts))
+        (dolist (font-name (reverse font-names))
           (let ((fs (font-spec :name (concat font-name "-" font-size ":antialias=subpixel"))))
             (set-fontset-font fontset 'unicode fs nil 'prepend))))))
 
@@ -189,11 +189,11 @@
   ;; frame dimensions.
   (if init--is-presentation-mode
       (progn
-        (init--set-up-fonts init--font-size)
+        (init--set-fonts init--fonts init--font-size)
         (toggle-frame-fullscreen))
     (progn
       (toggle-frame-fullscreen)
-      (init--set-up-fonts "20.0")))
+      (init--set-fonts init--fonts "20.0")))
   (setq init--is-presentation-mode (not init--is-presentation-mode)))
 
 ;;;;------------------------------------
@@ -337,7 +337,7 @@
 ;; Set initial frame size.
 (setq initial-frame-alist `((width . ,init--frame-width) (height . ,init--frame-height)))
 
-(init--set-up-fonts init--font-size)
+(init--set-fonts init--fonts init--font-size)
 
 ;; Set frame title.
 (setq frame-title-format '("%b"))
