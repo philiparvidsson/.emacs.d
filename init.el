@@ -34,27 +34,44 @@
 ;;;; Constants.
 ;;;;------------------------------------
 
+;; Used to measure the time taken to initialize Emacs.
 (defconst init--start-time (current-time))
 
+;; Figure out what system we're running on.
 (defconst init--is-linux   (eq system-type 'gnu/linux))
 (defconst init--is-windows (eq system-type 'windows-nt))
 
+;; Specifies the initial width and height of the Emacs frame.
 (defconst init--frame-width 104)
 (defconst init--frame-height 58)
 
-(defconst init--fonts (cond (init--is-linux   '("Liberation Mono-9.0"))
-                            (init--is-windows '("Consolas-10.0"
-                                                "Symbola monospacified for Consolas-10.0"
-                                                "SimSun-10.0"))))
+;; The font size to use.
+(defconst init--font-size "10.0")
 
+;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
+;; font at the top will be prioritized.
+(defconst init--fonts (cond (init--is-linux   '("Liberation Mono"))
+                            (init--is-windows '("Consolas"
+                                                "Symbola monospacified for Consolas"
+                                                "SimSun"))))
+
+;; Indentation (in number of spaces).
 (defconst init--indent-offset 2)
+
+;; Maximum preferred line width (affects word paragraph filling and `whitespace-mode', etc.).
 (defconst init--line-width 100)
 
+;; File manager to use when C-c e is pressed.
 (defconst init--file-manager (cond (init--is-linux   "thunar")
                                    (init--is-windows "xyplorer")))
+
+;; Arguments to pass to the file manager when it's launched from Emacs.
 (defconst init--file-manager-args '((file-name-directory buffer-file-name)))
 
+;; Terminal to use when C-c t is pressed.
 (defconst init--terminal "Cmder")
+
+;; Arguments to pass to the terminal when it's launched from Emacs.
 (defconst init--terminal-args '("/single" (file-name-directory buffer-file-name)))
 
 ;;;;------------------------------------
@@ -137,6 +154,14 @@
   (let ((args (mapcar 'eval init--terminal-args)))
     (apply 'call-process (append (list init--terminal nil 0 nil) args))))
 
+(defun init--set-up-fonts (font-size)
+  ;; Set up fonts if running in a window (not terminal).
+  (if (window-system)
+      (dolist (fontset (fontset-list))
+        (dolist (font-name (reverse init--fonts))
+          (let ((fs (font-spec :name (concat font-name "-" font-size ":antialias=subpixel"))))
+            (set-fontset-font fontset 'unicode fs nil 'prepend))))))
+
 (defun init--toggle-dual-window-view ()
   "Toggle between displaying one window (normal) and two windows (side-by-side)."
   (interactive)
@@ -160,10 +185,15 @@
 (defun init--toggle-presentation-mode ()
   "Toggle presentation (large text and fullscreen) mode."
   (interactive)
+  ;; I'm using `progn' below because fullscreen has to be toggled in a certain order to preserve
+  ;; frame dimensions.
   (if init--is-presentation-mode
-      (text-scale-set 0)
-    (text-scale-set 4))
-  (toggle-frame-fullscreen)
+      (progn
+        (init--set-up-fonts init--font-size)
+        (toggle-frame-fullscreen))
+    (progn
+      (toggle-frame-fullscreen)
+      (init--set-up-fonts "20.0")))
   (setq init--is-presentation-mode (not init--is-presentation-mode)))
 
 ;;;;------------------------------------
@@ -307,12 +337,7 @@
 ;; Set initial frame size.
 (setq initial-frame-alist `((width . ,init--frame-width) (height . ,init--frame-height)))
 
-;; Set up fonts if running in a window (not terminal).
-(if (window-system)
-    (dolist (fontset (fontset-list))
-      (dolist (font-name (reverse init--fonts))
-        (let ((fs (font-spec :name (concat font-name ":antialias=subpixel"))))
-          (set-fontset-font fontset 'unicode fs nil 'prepend)))))
+(init--set-up-fonts init--font-size)
 
 ;; Set frame title.
 (setq frame-title-format '("%b"))
