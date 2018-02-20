@@ -7,6 +7,7 @@
 /elpa/
 \#*\#
 ac-comphist.dat
+custom.el
 projectile-bookmarks.eld
 projectile.cache
 session.*
