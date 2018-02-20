@@ -114,7 +114,8 @@
   (package-refresh-contents)
 
   ;; Install packages from (M)ELPA.
-  (dolist (it '(company
+  (dolist (it '(auctex
+                company
                 csharp-mode
                 diminish
                 flycheck
