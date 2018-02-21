@@ -277,9 +277,9 @@
 ;;               be a bug in startGroovy.bat on Windows 10 causing an infinite loop, effectively
 ;;               hanging Flycheck. See https://github.com/flycheck/flycheck/issues/1395 for more
 ;;               information.
-(with-eval-after-load "flycheck" (lambda ()
-                                   (setq flycheck-global-modes '(not 'groovy-mode))
-                                   (global-flycheck-mode)))
+(with-eval-after-load "flycheck"
+  (setq flycheck-global-modes '(not groovy-mode))
+  (global-flycheck-mode))
 
 ;; Set up Company for auto-completion when typing.
 (with-eval-after-load "company"
