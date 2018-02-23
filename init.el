@@ -396,6 +396,7 @@
                                                       :background "#fae9c3"
                                                       :foreground nil)))
 
+;; I don't like how `LaTeX-mode' changes font sizes, does subscripts, etc.
 (with-eval-after-load "latex"
   (setq font-latex-fontify-script nil
         font-latex-fontify-sectioning 'color))
