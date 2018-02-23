@@ -386,6 +386,8 @@
 
 ;; Load and configure the theme.
 (setq spacemacs-theme-comment-bg nil)
+;;      spacemacs-theme-comment-italic t
+;;      spacemacs-theme-custom-colors '((comment-light . "#2aa1ae")))
 (load-theme 'spacemacs-light t)
 
 ;; Fix for `whitespace-mode' when using the `spacemacs-light' theme.
@@ -393,6 +395,10 @@
                                   (set-face-attribute 'whitespace-line nil
                                                       :background "#fae9c3"
                                                       :foreground nil)))
+
+(with-eval-after-load "latex"
+  (setq font-latex-fontify-script nil
+        font-latex-fontify-sectioning 'color))
 
 ;;;;------------------------------------
 ;;;; Key-bindings.
