@@ -45,7 +45,7 @@
 (defconst init--frame-width 104)
 (defconst init--frame-height 58)
 
-;; The font (in points) size to use.
+;; The font size (in points) to use.
 (defconst init--font-size "10.0")
 
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
@@ -137,7 +137,7 @@
     (unless (package-installed-p it)
       (package-install it)))
 
-  ;; Make sure to install OmniSharp server so I don't have to do it manually.
+  ;; Make sure to install OmniSharp server here so I don't have to do it manually.
   (omnisharp--install-server nil t))
 
 (require 'multiple-cursors)
