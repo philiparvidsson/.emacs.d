@@ -135,7 +135,10 @@
                 web-mode
                 xah-math-input))
     (unless (package-installed-p it)
-      (package-install it))))
+      (package-install it)))
+
+  ;; Make sure to install OmniSharp server so I don't have to do it manually.
+  (omnisharp--install-server nil t))
 
 (require 'multiple-cursors)
 
