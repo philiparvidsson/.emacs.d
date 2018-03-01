@@ -69,7 +69,7 @@
 (defconst init--file-manager-args '((file-name-directory buffer-file-name)))
 
 ;; Terminal to use when C-c t is pressed.
-(defconst init--terminal "Cmder")
+(defconst init--terminal "cmder.bat")
 
 ;; Arguments to pass to the terminal when it's launched from Emacs.
 (defconst init--terminal-args '("/single" (file-name-directory buffer-file-name)))
@@ -309,8 +309,13 @@
    ;; Enable Projectile to be used anywhere (even without project files).
    projectile-require-project-root nil))
 
-;; Enable Company and Projectile when any `prog-mode' is activated.
-(add-hook 'prog-mode-hook (lambda () (company-mode) (projectile-mode)))
+;; Enable Projectile mode globally after initialization.
+(add-hook 'after-init-hook 'projectile-mode)
+
+;; Enable Company mode.
+(add-hook 'prog-mode-hook 'company-mode)
+(add-hook 'text-mode-hook 'company-mode)
+(add-hook 'web-mode-hook  'company-mode) ;; <-- Seems `web-mode' is not a derived mode!
 
 ;; Use OmniSharp in C# buffers.
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
@@ -474,7 +479,6 @@
 
 ;; Swiper is much better than i-search.
 (global-set-key (kbd "C-s") 'swiper)
-(global-set-key (kbd "C-S-s") 'swiper-all)
 
 ;;;;------------------------------------
 ;;;; Finalization.
