@@ -132,6 +132,7 @@
                 rainbow-mode
                 spacemacs-theme
                 swiper
+                vlf
                 web-mode
                 xah-math-input))
     (unless (package-installed-p it)
@@ -141,6 +142,9 @@
   (omnisharp--install-server nil t))
 
 (require 'multiple-cursors)
+
+;; Use VLF (View Large Files) for large files so we can edit them in Emacs without hanging.
+(require 'vlf-setup)
 
 ;;;;------------------------------------
 ;;;; Functions.
