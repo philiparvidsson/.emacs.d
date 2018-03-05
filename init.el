@@ -334,6 +334,9 @@
 ;; Don't indent on yank in `web-mode'.
 (setq web-mode-enable-auto-indentation nil)
 
+;; Automatically use VLF for large files.
+(setq vlf-application 'dont-ask)
+
 ;;;;------------------------------------
 ;;;; User interface.
 ;;;;------------------------------------
