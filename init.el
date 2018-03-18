@@ -35,54 +35,54 @@
 ;;;;------------------------------------
 
 ;; Used to measure the time taken to initialize Emacs.
-(defconst init--start-time (current-time))
+(defconst p--start-time (current-time))
 
 ;; Figure out what system we're running on.
-(defconst init--is-linux   (eq system-type 'gnu/linux))
-(defconst init--is-windows (eq system-type 'windows-nt))
+(defconst p--is-linux   (eq system-type 'gnu/linux))
+(defconst p--is-windows (eq system-type 'windows-nt))
 
 ;; Specifies the initial width and height (in number of characters) of the Emacs frame.
-(defconst init--frame-width 104)
-(defconst init--frame-height 58)
+(defconst p--frame-width 104)
+(defconst p--frame-height 58)
 
 ;; The font size (in points) to use.
-(defconst init--font-size "10.0")
+(defconst p--font-size "10.0")
 
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
 ;; font at the top will be prioritized.
-(defconst init--fonts (cond (init--is-linux   '("Liberation Mono"))
-                            (init--is-windows '("Consolas"
+(defconst p--fonts (cond (p--is-linux   '("Liberation Mono"))
+                            (p--is-windows '("Consolas"
                                                 "Symbola monospacified for Consolas"
                                                 "SimSun"))))
 
 ;; Indentation (in number of spaces).
-(defconst init--indent-offset 2)
+(defconst p--indent-offset 2)
 
 ;; Maximum preferred line width (affects word paragraph filling and `whitespace-mode', etc.).
-(defconst init--line-width 100)
+(defconst p--line-width 100)
 
 ;; File manager to use when C-c e is pressed.
-(defconst init--file-manager (cond (init--is-linux   "thunar")
-                                   (init--is-windows "xyplorer")))
+(defconst p--file-manager (cond (p--is-linux   "thunar")
+                                   (p--is-windows "xyplorer")))
 
 ;; Arguments to pass to the file manager when it's launched from Emacs.
-(defconst init--file-manager-args '((file-name-directory buffer-file-name)))
+(defconst p--file-manager-args '((file-name-directory buffer-file-name)))
 
 ;; Terminal to use when C-c t is pressed.
-(defconst init--terminal "cmder.bat")
+(defconst p--terminal "cmder.bat")
 
 ;; Arguments to pass to the terminal when it's launched from Emacs.
-(defconst init--terminal-args '("/single" (file-name-directory buffer-file-name)))
+(defconst p--terminal-args '("/single" (file-name-directory buffer-file-name)))
 
 ;;;;------------------------------------
 ;;;; Variables.
 ;;;;------------------------------------
 
-;; Used to remember the last active buffer in the other window in `init--toggle-dual-window-view'.
-(defvar init--other-window-buffer nil)
+;; Used to remember the last active buffer in the other window in `p--toggle-dual-window-view'.
+(defvar p--other-window-buffer nil)
 
 ;; Whether we're in presentation mode (F11-key toggles it).
-(defvar init--is-presentation-mode nil)
+(defvar p--is-presentation-mode nil)
 
 ;;;;------------------------------------
 ;;;; Initialization.
@@ -124,6 +124,7 @@
                 hydra
                 ivy
                 js2-mode
+                julia-mode
                 lua-mode
                 magit
                 multiple-cursors
@@ -150,19 +151,19 @@
 ;;;; Functions.
 ;;;;------------------------------------
 
-(defun init--open-file-manager ()
+(defun p--open-file-manager ()
   "Run the configured external file manager executable."
   (interactive)
-  (let ((args (mapcar 'eval init--file-manager-args)))
-    (apply 'call-process (append (list init--file-manager nil 0 nil) args))))
+  (let ((args (mapcar 'eval p--file-manager-args)))
+    (apply 'call-process (append (list p--file-manager nil 0 nil) args))))
 
-(defun init--open-terminal ()
+(defun p--open-terminal ()
   "Run the configured external terminal executable."
   (interactive)
-  (let ((args (mapcar 'eval init--terminal-args)))
-    (apply 'call-process (append (list init--terminal nil 0 nil) args))))
+  (let ((args (mapcar 'eval p--terminal-args)))
+    (apply 'call-process (append (list p--terminal nil 0 nil) args))))
 
-(defun init--set-fonts (font-names font-size)
+(defun p--set-fonts (font-names font-size)
   ;; Set up fonts if running in a window (not terminal).
   (if (window-system)
       (dolist (fontset (fontset-list))
@@ -170,14 +171,14 @@
           (let ((fs (font-spec :name (concat font-name "-" font-size ":antialias=subpixel"))))
             (set-fontset-font fontset 'unicode fs nil 'prepend))))))
 
-(defun init--toggle-dual-window-view ()
+(defun p--toggle-dual-window-view ()
   "Toggle between displaying one window (normal) and two windows (side-by-side)."
   (interactive)
   (if (eq (length (window-list)) 2)
       ;; Two windows open, so save the buffer that is open in the other window and close it, then
       ;; halve the frame width.
       (progn
-        (setq init--other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
+        (setq p--other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
         (delete-other-windows)
         (set-frame-size nil (/ (frame-width) 2) (frame-height)))
     (progn
@@ -185,24 +186,24 @@
       ;; in the other window.
       (set-frame-size nil (* (frame-width) 2) (frame-height))
       (split-window-right)
-      (when (buffer-live-p init--other-window-buffer)
+      (when (buffer-live-p p--other-window-buffer)
         (other-window 1)
-        (set-window-buffer (selected-window) init--other-window-buffer)
+        (set-window-buffer (selected-window) p--other-window-buffer)
         (other-window 1)))))
 
-(defun init--toggle-presentation-mode ()
+(defun p--toggle-presentation-mode ()
   "Toggle presentation (large text and fullscreen) mode."
   (interactive)
   ;; I'm using `progn' below because fullscreen has to be toggled in a certain order to preserve
   ;; frame dimensions.
-  (if init--is-presentation-mode
+  (if p--is-presentation-mode
       (progn
-        (init--set-fonts init--fonts init--font-size)
+        (p--set-fonts p--fonts p--font-size)
         (toggle-frame-fullscreen))
     (progn
       (toggle-frame-fullscreen)
-      (init--set-fonts init--fonts "20.0")))
-  (setq init--is-presentation-mode (not init--is-presentation-mode)))
+      (p--set-fonts p--fonts "18.0")))
+  (setq p--is-presentation-mode (not p--is-presentation-mode)))
 
 ;;;;------------------------------------
 ;;;; Behavior.
@@ -227,7 +228,7 @@
                   (delete-region (point) (progn (skip-chars-forward " \t") (point))))))
 
 ;; Word wrap long lines.
-(setq-default fill-column init--line-width)
+(setq-default fill-column p--line-width)
 
 ;; Don't use tab characters.
 (setq-default indent-tabs-mode nil)
@@ -267,14 +268,15 @@
   (add-to-list 'auto-mode-alist it))
 
 ;; Indentation stuff.
-(setq-default c-basic-offset                init--indent-offset
-              css-indent-offset             init--indent-offset
-              groovy-indent-offset          init--indent-offset
-              js-indent-level               init--indent-offset
-              python-indent-offset          init--indent-offset
-              web-mode-code-indent-offset   init--indent-offset
-              web-mode-css-indent-offset    init--indent-offset
-              web-mode-markup-indent-offset init--indent-offset)
+(setq-default c-basic-offset                p--indent-offset
+              css-indent-offset             p--indent-offset
+              groovy-indent-offset          p--indent-offset
+              js-indent-level               p--indent-offset
+              julia-indent-offset           p--indent-offset
+              python-indent-offset          p--indent-offset
+              web-mode-code-indent-offset   p--indent-offset
+              web-mode-css-indent-offset    p--indent-offset
+              web-mode-markup-indent-offset p--indent-offset)
 
 ;; Don't indent the first level inside namespaces.
 (c-set-offset 'innamespace 0)
@@ -351,9 +353,9 @@
 (fringe-mode 0)
 
 ;; Set initial frame size.
-(setq initial-frame-alist `((width . ,init--frame-width) (height . ,init--frame-height)))
+(setq initial-frame-alist `((width . ,p--frame-width) (height . ,p--frame-height)))
 
-(init--set-fonts init--fonts init--font-size)
+(p--set-fonts p--fonts p--font-size)
 
 ;; Set frame title.
 (setq frame-title-format '("%b"))
@@ -378,7 +380,7 @@
 (size-indication-mode t)
 
 ;; Highlight long lines.
-(setq whitespace-line-column init--line-width
+(setq whitespace-line-column p--line-width
       whitespace-style '(face tabs lines-tail))
 (add-hook 'prog-mode-hook 'whitespace-mode)
 (add-hook 'web-mode-hook 'whitespace-mode) ;; <-- Unsure why this is needed!
@@ -421,7 +423,7 @@
 ;;;;------------------------------------
 
 ;; Presentation mode.
-(global-set-key (kbd "<f11>") 'init--toggle-presentation-mode)
+(global-set-key (kbd "<f11>") 'p--toggle-presentation-mode)
 
 ;; Shortcut to align lines by regexp.
 (global-set-key (kbd "C-c a") 'align-regexp)
@@ -434,10 +436,10 @@
 
 ;; Toggle double frame view.
 (if (window-system)
-    (global-set-key (kbd "C-c d") 'init--toggle-dual-window-view))
+    (global-set-key (kbd "C-c d") 'p--toggle-dual-window-view))
 
 ;; Open current directory with the configured file manager.
-(global-set-key (kbd "C-c e") 'init--open-file-manager)
+(global-set-key (kbd "C-c e") 'p--open-file-manager)
 
 ;; Move point to a line quickly.
 (global-set-key (kbd "C-c g") 'goto-line)
@@ -473,7 +475,7 @@
 (global-set-key (kbd "C-c s") 'sort-lines)
 
 ;; Open terminal in current directory.
-(global-set-key (kbd "C-c t") 'init--open-terminal)
+(global-set-key (kbd "C-c t") 'p--open-terminal)
 
 ;; Easy access to Magit.
 (global-set-key (kbd "C-c v") 'magit-status)
@@ -491,7 +493,7 @@
 ;;;; Finalization.
 ;;;;------------------------------------
 
-(let ((elapsed (float-time (time-subtract (current-time) init--start-time))))
+(let ((elapsed (float-time (time-subtract (current-time) p--start-time))))
   (setq initial-scratch-message (format ";; Emacs initialized in %.3fs\n\n" elapsed)))
 
 ;;; init.el ends here
