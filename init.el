@@ -51,9 +51,9 @@
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
 ;; font at the top will be prioritized.
 (defconst p--fonts (cond (p--is-linux   '("Liberation Mono"))
-                            (p--is-windows '("Consolas"
-                                                "Symbola monospacified for Consolas"
-                                                "SimSun"))))
+                         (p--is-windows '("Consolas"
+                                          "Symbola monospacified for Consolas"
+                                          "SimSun"))))
 
 ;; Indentation (in number of spaces).
 (defconst p--indent-offset 2)
@@ -63,7 +63,7 @@
 
 ;; File manager to use when C-c e is pressed.
 (defconst p--file-manager (cond (p--is-linux   "thunar")
-                                   (p--is-windows "xyplorer")))
+                                (p--is-windows "xyplorer")))
 
 ;; Arguments to pass to the file manager when it's launched from Emacs.
 (defconst p--file-manager-args '((file-name-directory buffer-file-name)))
@@ -132,6 +132,7 @@
                 projectile
                 rainbow-mode
                 spacemacs-theme
+                spaceline
                 swiper
                 vlf
                 web-mode
@@ -355,6 +356,7 @@
 ;; Set initial frame size.
 (setq initial-frame-alist `((width . ,p--frame-width) (height . ,p--frame-height)))
 
+;; Set up the configured fonts.
 (p--set-fonts p--fonts p--font-size)
 
 ;; Set frame title.
@@ -393,6 +395,7 @@
 (with-eval-after-load "auto-fill-function" (diminish 'auto-fill-function))
 (with-eval-after-load "company"            (diminish 'company-mode))
 (with-eval-after-load "eldoc"              (diminish 'eldoc-mode))
+(with-eval-after-load "flycheck"           (diminish 'flycheck-mode)) ;; <-- Only with `spaceline'!
 (with-eval-after-load "omnisharp"          (diminish 'omnisharp-mode))
 (with-eval-after-load "projectile"         (diminish 'projectile-mode))
 (with-eval-after-load "rainbow-mode"       (diminish 'rainbow-mode))
@@ -417,6 +420,11 @@
 (with-eval-after-load "latex"
   (setq font-latex-fontify-script nil
         font-latex-fontify-sectioning 'color))
+
+;; Make the mode line look much better. Unforunately, this adds a significant amount of time to the
+;; initialization phase. :-(
+(require 'spaceline-config)
+(spaceline-spacemacs-theme)
 
 ;;;;------------------------------------
 ;;;; Key-bindings.
