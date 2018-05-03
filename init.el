@@ -480,7 +480,7 @@
   ("<escape>" nil :exit t))
 
 ;; Sort lines.
-(global-set-key (kbd "C-c s") 'sort-lines)
+(global-set-key (kbd "C-c o") 'sort-lines)
 
 ;; Open terminal in current directory.
 (global-set-key (kbd "C-c t") 'p--open-terminal)
@@ -495,7 +495,7 @@
 (global-set-key (kbd "C-S-p") 'backward-paragraph)
 
 ;; Swiper is much better than i-search.
-(global-set-key (kbd "C-s") 'swiper)
+(global-set-key (kbd "C-c s") 'swiper)
 
 ;;;;------------------------------------
 ;;;; Finalization.
