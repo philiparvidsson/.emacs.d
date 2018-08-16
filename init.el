@@ -35,54 +35,50 @@
 ;;;;------------------------------------
 
 ;; Used to measure the time taken to initialize Emacs.
-(defconst p--start-time (current-time))
+(defconst my-start-time (current-time))
 
 ;; Figure out what system we're running on.
-(defconst p--is-linux   (eq system-type 'gnu/linux))
-(defconst p--is-windows (eq system-type 'windows-nt))
+(defconst my-is-linux   (eq system-type 'gnu/linux))
+(defconst my-is-windows (eq system-type 'windows-nt))
 
 ;; Specifies the initial width and height (in number of characters) of the Emacs frame.
-(defconst p--frame-width 104)
-(defconst p--frame-height 58)
+(defconst my-frame-width 106)
+(defconst my-frame-height (if (string= (system-name) "PHILIP-XPS") 34 54))
 
 ;; The font size (in points) to use.
-(defconst p--font-size "10.0")
+(defconst my-font-size "11.0")
 
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
 ;; font at the top will be prioritized.
-(defconst p--fonts (cond (p--is-linux   '("Liberation Mono"))
-                         (p--is-windows '("Consolas"
-                                          "Symbola monospacified for Consolas"
-                                          "SimSun"))))
+(defconst my-fonts (cond (my-is-linux   '("Liberation Mono"))
+                         (my-is-windows '("Consolas"
+                                          "Symbola monospacified for Consolas"))))
 
 ;; Indentation (in number of spaces).
-(defconst p--indent-offset 2)
+(defconst my-indent-offset 2)
 
 ;; Maximum preferred line width (affects word paragraph filling and `whitespace-mode', etc.).
-(defconst p--line-width 100)
+(defconst my-line-width 100)
 
 ;; File manager to use when C-c e is pressed.
-(defconst p--file-manager (cond (p--is-linux   "thunar")
-                                (p--is-windows "xyplorer")))
+(defconst my-file-manager (cond (my-is-linux   "thunar")
+                                (my-is-windows "xyplorer")))
 
 ;; Arguments to pass to the file manager when it's launched from Emacs.
-(defconst p--file-manager-args '((file-name-directory buffer-file-name)))
+(defconst my-file-manager-args '((file-name-directory buffer-file-name)))
 
 ;; Terminal to use when C-c t is pressed.
-(defconst p--terminal "cmder.bat")
+(defconst my-terminal "cmder.bat")
 
 ;; Arguments to pass to the terminal when it's launched from Emacs.
-(defconst p--terminal-args '("/single" (file-name-directory buffer-file-name)))
+(defconst my-terminal-args '("/single" (file-name-directory buffer-file-name)))
 
 ;;;;------------------------------------
 ;;;; Variables.
 ;;;;------------------------------------
 
-;; Used to remember the last active buffer in the other window in `p--toggle-dual-window-view'.
-(defvar p--other-window-buffer nil)
-
-;; Whether we're in presentation mode (F11-key toggles it).
-(defvar p--is-presentation-mode nil)
+;; Used to remember the last active buffer in the other window in `my-toggle-dual-window-view'.
+(defvar my-other-window-buffer nil)
 
 ;;;;------------------------------------
 ;;;; Initialization.
@@ -98,7 +94,10 @@
 
 ;; Prefer UTF-8 and Unix line endings.
 (prefer-coding-system 'utf-8)
-(setq-default buffer-file-coding-system 'utf-8-unix)
+(setq-default buffer-file-coding-system 'utf-8)
+
+;; Because I use Dropbox...
+(setq server-name (system-name))
 
 ;;;;------------------------------------
 ;;;; Packages.
@@ -118,15 +117,18 @@
                 company
                 csharp-mode
                 diminish
+                ess
                 flycheck
                 glsl-mode
                 groovy-mode
+                hy-mode
                 hydra
                 ivy
                 js2-mode
                 julia-mode
                 lua-mode
                 magit
+                markdown-mode
                 multiple-cursors
                 omnisharp
                 projectile
@@ -134,6 +136,7 @@
                 spacemacs-theme
                 spaceline
                 swiper
+                tide
                 vlf
                 web-mode
                 xah-math-input))
@@ -143,7 +146,14 @@
   ;; Make sure to install OmniSharp server here so I don't have to do it manually.
   (omnisharp--install-server nil t))
 
+;; Hy-mode won't auto-load on .hy-files without this.
+(require 'hy-mode)
+
+;; The multiple cursor keybindings won't work without this.
 (require 'multiple-cursors)
+
+;; The  C-<return> key-binding won't work without this.
+(require 'xah-math-input)
 
 ;; Use VLF (View Large Files) for large files so we can edit them in Emacs without hanging.
 (require 'vlf-setup)
@@ -152,34 +162,54 @@
 ;;;; Functions.
 ;;;;------------------------------------
 
-(defun p--open-file-manager ()
+;; Patch for `ess-mode'. See https://github.com/emacs-ess/ESS/issues/620 for more information.
+(defun my-ess-eval-line-and-newline (&optional vis)
+  "Evaluate the current line using ESS."
+  (interactive "P")
+  (ess-eval-line vis)
+  (if (search-forward "\n" nil t)
+      (progn
+        (backward-char)
+        (ess-next-code-line 1))
+    (progn
+      (search-forward "\n" nil 1)
+      (ess-newline-and-indent))))
+
+(defun my-open-file-manager ()
   "Run the configured external file manager executable."
   (interactive)
-  (let ((args (mapcar 'eval p--file-manager-args)))
-    (apply 'call-process (append (list p--file-manager nil 0 nil) args))))
+  (let ((args (mapcar 'eval my-file-manager-args)))
+    (apply 'call-process (append (list my-file-manager nil 0 nil) args))))
 
-(defun p--open-terminal ()
+(defun my-open-terminal ()
   "Run the configured external terminal executable."
   (interactive)
-  (let ((args (mapcar 'eval p--terminal-args)))
-    (apply 'call-process (append (list p--terminal nil 0 nil) args))))
+  (let ((args (mapcar 'eval my-terminal-args)))
+    (apply 'call-process (append (list my-terminal nil 0 nil) args))))
 
-(defun p--set-fonts (font-names font-size)
+(defun my-set-fonts (font-names font-size)
+  "Set up Emacs to use the fonts specified in FONT-NAMES, using the specified FONT-SIZE."
   ;; Set up fonts if running in a window (not terminal).
-  (if (window-system)
+  (if (display-graphic-p)
       (dolist (fontset (fontset-list))
         (dolist (font-name (reverse font-names))
           (let ((fs (font-spec :name (concat font-name "-" font-size ":antialias=subpixel"))))
             (set-fontset-font fontset 'unicode fs nil 'prepend))))))
 
-(defun p--toggle-dual-window-view ()
+(defun my-tide-mode ()
+  "Set up Tide mode in Emacs."
+  (web-mode)
+  (tide-setup)
+  (eldoc-mode))
+
+(defun my-toggle-dual-window-view ()
   "Toggle between displaying one window (normal) and two windows (side-by-side)."
   (interactive)
   (if (eq (length (window-list)) 2)
       ;; Two windows open, so save the buffer that is open in the other window and close it, then
       ;; halve the frame width.
       (progn
-        (setq p--other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
+        (setq my-other-window-buffer (save-window-excursion (other-window 1) (current-buffer)))
         (delete-other-windows)
         (set-frame-size nil (/ (frame-width) 2) (frame-height)))
     (progn
@@ -187,24 +217,24 @@
       ;; in the other window.
       (set-frame-size nil (* (frame-width) 2) (frame-height))
       (split-window-right)
-      (when (buffer-live-p p--other-window-buffer)
+      (when (buffer-live-p my-other-window-buffer)
         (other-window 1)
-        (set-window-buffer (selected-window) p--other-window-buffer)
+        (set-window-buffer (selected-window) my-other-window-buffer)
         (other-window 1)))))
 
-(defun p--toggle-presentation-mode ()
+(defun my-toggle-presentation-mode ()
   "Toggle presentation (large text and fullscreen) mode."
   (interactive)
   ;; I'm using `progn' below because fullscreen has to be toggled in a certain order to preserve
   ;; frame dimensions.
-  (if p--is-presentation-mode
+  (let ((fullscreen (frame-parameter nil 'fullscreen)))
+    (if (memq fullscreen '(fullscreen fullboth))
+        (progn
+          (my-set-fonts my-fonts my-font-size)
+          (toggle-frame-fullscreen))
       (progn
-        (p--set-fonts p--fonts p--font-size)
-        (toggle-frame-fullscreen))
-    (progn
-      (toggle-frame-fullscreen)
-      (p--set-fonts p--fonts "18.0")))
-  (setq p--is-presentation-mode (not p--is-presentation-mode)))
+        (toggle-frame-fullscreen)
+        (my-set-fonts my-fonts "18.0")))))
 
 ;;;;------------------------------------
 ;;;; Behavior.
@@ -229,17 +259,16 @@
                   (delete-region (point) (progn (skip-chars-forward " \t") (point))))))
 
 ;; Word wrap long lines.
-(setq-default fill-column p--line-width)
+(setq-default fill-column my-line-width)
 
 ;; Don't use tab characters.
 (setq-default indent-tabs-mode nil)
 
 ;; Remove trailing whitespace from all lines on save (but make sure there's a linebreak at the end
 ;; of the file).  Markdown files need to keep their trailing spaces so they're excluded.
-(add-hook 'before-save-hook
-          (lambda ()
-            (unless (string= (file-name-extension buffer-file-name) "md")
-              (delete-trailing-whitespace))))
+(add-hook 'before-save-hook (lambda ()
+                              (unless (string= (file-name-extension buffer-file-name) "md")
+                                (delete-trailing-whitespace))))
 (setq require-final-newline t)
 
 ;; Match parentheses automatically.
@@ -264,26 +293,26 @@
 (dolist (it '(("\\.h\\'"   . c++-mode)  ; <-- Emacs will use `c-mode' in .h-files without this.
               ("\\.js\\'"  . js2-mode)
               ("\\.jsx\\'" . web-mode)
-              ("\\.ts\\'"  . web-mode)
-              ("\\.tsx\\'" . web-mode)))
+              ("\\.ts\\'"  . my-tide-mode)
+              ("\\.tsx\\'" . my-tide-mode)))
   (add-to-list 'auto-mode-alist it))
 
 ;; Indentation stuff.
-(setq-default c-basic-offset                p--indent-offset
-              css-indent-offset             p--indent-offset
-              groovy-indent-offset          p--indent-offset
-              js-indent-level               p--indent-offset
-              julia-indent-offset           p--indent-offset
-              python-indent-offset          p--indent-offset
-              web-mode-code-indent-offset   p--indent-offset
-              web-mode-css-indent-offset    p--indent-offset
-              web-mode-markup-indent-offset p--indent-offset)
+(setq-default c-basic-offset                my-indent-offset
+              css-indent-offset             my-indent-offset
+              groovy-indent-offset          my-indent-offset
+              js-indent-level               my-indent-offset
+              julia-indent-offset           my-indent-offset
+              python-indent-offset          my-indent-offset
+              web-mode-code-indent-offset   my-indent-offset
+              web-mode-css-indent-offset    my-indent-offset
+              web-mode-markup-indent-offset my-indent-offset)
 
 ;; Don't indent the first level inside namespaces.
 (c-set-offset 'innamespace 0)
 
 ;; Enable Flycheck for on-the-fly syntax checking.
-;; Feb 16, 2018: I'm disabling `flycheck-mode' when `groovy-mode' is enabled because there seemse to
+;; Feb 16, 2018: I'm disabling `flycheck-mode' when `groovy-mode' is enabled because there seems to
 ;;               be a bug in startGroovy.bat on Windows 10 causing an infinite loop, effectively
 ;;               hanging Flycheck. See https://github.com/flycheck/flycheck/issues/1395 for more
 ;;               information.
@@ -304,17 +333,24 @@
    ;; Use Ivy for finding files in Projectiles.
    projectile-completion-system 'ivy
 
+   ;; Native indexing seems to not respect globally ignored files or directories...
+   projectile-indexing-method 'alien
+
    ;; Make sure Projectile ignores irrelevant directories.
    projectile-globally-ignored-directories
-   (append '(".git" ".svn" ".vs" "bin" "Debug" "elpa" "node_modules" "obj" "Release")
+   (append '("$tf" ".git" ".gradle" ".svn" ".vs" ".vscode" "bin" "Debug" "dist" "elpa"
+             "gradle" "node_modules" "obj" "Release")
            projectile-globally-ignored-directories)
 
    projectile-globally-ignored-files
-   (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~")
+   (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~" "gradlew" "gradlew.bat")
            projectile-globally-ignored-files)
 
    ;; Enable Projectile to be used anywhere (even without project files).
-   projectile-require-project-root nil))
+   projectile-require-project-root nil)
+
+  ;; Projectile removed its default key-bindings, so setting them up manually here.
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
 ;; Enable Projectile mode globally after initialization.
 (add-hook 'after-init-hook 'projectile-mode)
@@ -340,8 +376,15 @@
 ;; Automatically use VLF for large files.
 (setq vlf-application 'dont-ask)
 
+;; Set up ESS to be sane when loaded.
+(add-hook 'ess-mode-hook (lambda ()
+                           (local-set-key (kbd "C-<return>") 'my-ess-eval-line-and-newline)
+                           (setq ess-ask-for-ess-directory nil
+                                 ess-fancy-comments        nil
+                                 ess-indent-offset         my-indent-offset)))
+
 ;;;;------------------------------------
-;;;; User interface.
+;;;; Appearance.
 ;;;;------------------------------------
 
 ;; Disable GUI stuff that I don't want or need.
@@ -350,14 +393,23 @@
 (tool-bar-mode -1)
 (tooltip-mode -1)
 
-;; Disable fringes.
+;; ;; Display line numbers (Emacs 26+).
+;; (setq-default display-line-numbers-width 3) ; <-- Prevent 'jump' in margin size at 100 LOC.
+;; (global-display-line-numbers-mode t)
+
+;; Disable fringes (they don't work well with high-DPI displays anyway).
 (fringe-mode 0)
 
 ;; Set initial frame size.
-(setq initial-frame-alist `((width . ,p--frame-width) (height . ,p--frame-height)))
+(setq default-frame-alist `((width . ,my-frame-width) (height . ,my-frame-height)))
 
 ;; Set up the configured fonts.
-(p--set-fonts p--fonts p--font-size)
+(if (daemonp)
+    (add-hook 'after-make-frame-functions (lambda (frame)
+                                            (with-selected-frame frame
+                                              (my-set-fonts my-fonts my-font-size))
+                                            (raise-frame frame)))
+  (my-set-fonts my-fonts my-font-size))
 
 ;; Set frame title.
 (setq frame-title-format '("%b"))
@@ -382,7 +434,7 @@
 (size-indication-mode t)
 
 ;; Highlight long lines.
-(setq whitespace-line-column p--line-width
+(setq whitespace-line-column my-line-width
       whitespace-style '(face tabs lines-tail))
 (add-hook 'prog-mode-hook 'whitespace-mode)
 (add-hook 'web-mode-hook 'whitespace-mode) ;; <-- Unsure why this is needed!
@@ -400,15 +452,20 @@
 (with-eval-after-load "projectile"         (diminish 'projectile-mode))
 (with-eval-after-load "rainbow-mode"       (diminish 'rainbow-mode))
 (with-eval-after-load "subword"            (diminish 'subword-mode))
+(with-eval-after-load "tide"               (diminish 'tide-mode))
 (with-eval-after-load "whitespace"         (diminish 'whitespace-mode))
 (with-eval-after-load "xah-math-input"     (diminish 'xah-math-input-mode))
-;;(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode))
+;;(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode)) ;; <-- Doesn't seem to be needed?
 
 ;; Load and configure the theme.
 (setq spacemacs-theme-comment-bg nil)
-;;      spacemacs-theme-comment-italic t
-;;      spacemacs-theme-custom-colors '((comment-light . "#2aa1ae")))
-(load-theme 'spacemacs-light t)
+;      ;;spacemacs-theme-comment-italic t
+;      ;;spacemacs-theme-custom-colors '((comment-light . "#2aa1ae")))
+(if (daemonp)
+    (add-hook 'after-make-frame-functions (lambda (frame)
+                                            (with-selected-frame frame
+                                              (load-theme 'spacemacs-light t))))
+  (load-theme 'spacemacs-light t))
 
 ;; Fix for `whitespace-mode' when using the `spacemacs-light' theme.
 (add-hook 'whitespace-mode-hook (lambda ()
@@ -430,24 +487,26 @@
 ;;;; Key-bindings.
 ;;;;------------------------------------
 
-;; Presentation mode.
-(global-set-key (kbd "<f11>") 'p--toggle-presentation-mode)
+;; Easy way to type symbol without enabling `xah-math-input-mode'.
+(global-set-key (kbd "C-<return>") 'xah-math-input-change-to-symbol)
 
 ;; Shortcut to align lines by regexp.
 (global-set-key (kbd "C-c a") 'align-regexp)
 
-;; Switch back and forth between the two last buffers.
-(global-set-key (kbd "C-c b") 'mode-line-other-buffer)
+;; Switch between buffers easily.
+(global-set-key (kbd "C-c b") 'ivy-switch-buffer)
 
 ;; Comment easily.
 (global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
 
 ;; Toggle double frame view.
-(if (window-system)
-    (global-set-key (kbd "C-c d") 'p--toggle-dual-window-view))
+(global-set-key (kbd "C-c d") 'my-toggle-dual-window-view)
 
 ;; Open current directory with the configured file manager.
-(global-set-key (kbd "C-c e") 'p--open-file-manager)
+(global-set-key (kbd "C-c e") 'my-open-file-manager)
+
+;; Presentation mode.
+(global-set-key (kbd "C-c f") 'my-toggle-presentation-mode)
 
 ;; Move point to a line quickly.
 (global-set-key (kbd "C-c g") 'goto-line)
@@ -457,6 +516,9 @@
 
 ;; Indent region.
 (global-set-key (kbd "C-c i") 'indent-region)
+
+;; Sort lines.
+(global-set-key (kbd "C-c o") 'sort-lines)
 
 ;; Close automatically opened window (from, e.g., search).
 (global-set-key (kbd "C-c q") 'delete-other-windows-vertically)
@@ -479,14 +541,14 @@
   ("n" (mc/mark-next-like-this-symbol 1))
   ("<escape>" nil :exit t))
 
-;; Sort lines.
-(global-set-key (kbd "C-c o") 'sort-lines)
-
 ;; Open terminal in current directory.
-(global-set-key (kbd "C-c t") 'p--open-terminal)
+(global-set-key (kbd "C-c t") 'my-open-terminal)
 
 ;; Easy access to Magit.
 (global-set-key (kbd "C-c v") 'magit-status)
+
+;; I don't like C-x 5 0.
+(global-set-key (kbd "C-c w") 'delete-frame)
 
 ;; Move faster through text when holding the shift key.
 (global-set-key (kbd "C-S-b") 'left-word)
@@ -495,13 +557,13 @@
 (global-set-key (kbd "C-S-p") 'backward-paragraph)
 
 ;; Swiper is much better than i-search.
-(global-set-key (kbd "C-c s") 'swiper)
+(global-set-key (kbd "C-c s") 'swiper-all)
 
 ;;;;------------------------------------
 ;;;; Finalization.
 ;;;;------------------------------------
 
-(let ((elapsed (float-time (time-subtract (current-time) p--start-time))))
+(let ((elapsed (float-time (time-subtract (current-time) my-start-time))))
   (setq initial-scratch-message (format ";; Emacs initialized in %.3fs\n\n" elapsed)))
 
 ;;; init.el ends here
