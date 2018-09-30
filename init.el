@@ -80,6 +80,9 @@
 ;; Used to remember the last active buffer in the other window in `my-toggle-dual-window-view'.
 (defvar my-other-window-buffer nil)
 
+;; Used to remember the last evaluated line in `ess-mode'.
+(defvar my-last-ess-eval "")
+
 ;;;;------------------------------------
 ;;;; Initialization.
 ;;;;------------------------------------
@@ -130,11 +133,12 @@
                 magit
                 markdown-mode
                 multiple-cursors
+                neotree
                 omnisharp
                 projectile
                 rainbow-mode
-                spacemacs-theme
                 spaceline
+                spacemacs-theme
                 swiper
                 tide
                 vlf
@@ -162,10 +166,34 @@
 ;;;; Functions.
 ;;;;------------------------------------
 
+;; https://www.emacswiki.org/emacs/NeoTree#toc11
+(defun my-neotree-project-dir ()
+  "Open NeoTree using the git root."
+  (interactive)
+  (let ((project-dir (projectile-project-root))
+        (file-name (buffer-file-name)))
+    (neotree-toggle)
+    (if project-dir
+        (if (neo-global--window-exists-p)
+            (progn
+              (neotree-dir project-dir)
+              (neotree-find file-name)))
+      (message "Could not find git project root."))))
+
+(defun my-kill-other-buffers (&optional arg)
+  "Kill all buffers except the current one (and *scratch*).  If ARG is non-nil, kill all buffers."
+  (interactive "P")
+  (let* ((scratch-buffer (get-buffer "*scratch*"))
+         (all-buffers-except-scratch (delq scratch-buffer (buffer-list))))
+    (if arg
+        (mapc 'kill-buffer all-buffers-except-scratch)
+      (mapc 'kill-buffer (delq (current-buffer) all-buffers-except-scratch)))))
+
 ;; Patch for `ess-mode'. See https://github.com/emacs-ess/ESS/issues/620 for more information.
 (defun my-ess-eval-line-and-newline (&optional vis)
-  "Evaluate the current line using ESS."
+  "Evaluate the current line using ESS.  If VIS is non-nil, show output in ESS terminal."
   (interactive "P")
+  (setq my-last-ess-eval (thing-at-point 'line))
   (ess-eval-line vis)
   (if (search-forward "\n" nil t)
       (progn
@@ -174,6 +202,13 @@
     (progn
       (search-forward "\n" nil 1)
       (ess-newline-and-indent))))
+
+(defun my-ess-eval-last (&optional arg)
+  "Evaluate last evaluated command using ESS."
+  (interactive)
+  (when (not (string= my-last-ess-eval ""))
+    (ess-eval-linewise my-last-ess-eval nil)
+    (message my-last-ess-eval)))
 
 (defun my-open-file-manager ()
   "Run the configured external file manager executable."
@@ -379,6 +414,7 @@
 ;; Set up ESS to be sane when loaded.
 (add-hook 'ess-mode-hook (lambda ()
                            (local-set-key (kbd "C-<return>") 'my-ess-eval-line-and-newline)
+                           (local-set-key (kbd "C-M-<return>") 'my-ess-eval-last)
                            (setq ess-ask-for-ess-directory nil
                                  ess-fancy-comments        nil
                                  ess-indent-offset         my-indent-offset)))
@@ -517,6 +553,9 @@
 ;; Indent region.
 (global-set-key (kbd "C-c i") 'indent-region)
 
+;; Kill other buffers easily.
+(global-set-key (kbd "C-c k") 'my-kill-other-buffers)
+
 ;; Sort lines.
 (global-set-key (kbd "C-c o") 'sort-lines)
 
@@ -558,6 +597,13 @@
 
 ;; Swiper is much better than i-search.
 (global-set-key (kbd "C-c s") 'swiper-all)
+
+;; Easy evaluation of regions in `emacs-lisp-mode'.
+(add-hook 'emacs-lisp-mode-hook (lambda ()
+                                  (local-set-key (kbd "C-<return>") 'eval-region)))
+
+;; NeoTree.
+(global-set-key (kbd "C-c n") 'my-neotree-project-dir)
 
 ;;;;------------------------------------
 ;;;; Finalization.
