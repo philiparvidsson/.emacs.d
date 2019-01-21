@@ -128,19 +128,20 @@
                 hydra
                 ivy
                 js2-mode
-                julia-mode
                 lua-mode
                 magit
                 markdown-mode
                 multiple-cursors
                 neotree
                 omnisharp
+                phi-search
                 projectile
                 rainbow-mode
                 spaceline
                 spacemacs-theme
                 swiper
                 tide
+                unicode-fonts
                 vlf
                 web-mode
                 xah-math-input))
@@ -149,6 +150,9 @@
 
   ;; Make sure to install OmniSharp server here so I don't have to do it manually.
   (omnisharp--install-server nil t))
+
+(require 'unicode-fonts)
+(unicode-fonts-setup)
 
 ;; Hy-mode won't auto-load on .hy-files without this.
 (require 'hy-mode)
@@ -271,6 +275,15 @@
         (toggle-frame-fullscreen)
         (my-set-fonts my-fonts "18.0")))))
 
+(defun my-setup-ess-mode ()
+  "Set up `ess-mode'."
+  (local-set-key (kbd "C-<return>") 'my-ess-eval-line-and-newline)
+  (local-set-key (kbd "C-M-<return>") 'my-ess-eval-last)
+  (setq ess-ask-for-ess-directory nil
+        ess-fancy-comments        nil
+        ess-indent-offset         my-indent-offset
+        inferior-R-args           "--no-save --quiet"))
+
 ;;;;------------------------------------
 ;;;; Behavior.
 ;;;;------------------------------------
@@ -337,7 +350,6 @@
               css-indent-offset             my-indent-offset
               groovy-indent-offset          my-indent-offset
               js-indent-level               my-indent-offset
-              julia-indent-offset           my-indent-offset
               python-indent-offset          my-indent-offset
               web-mode-code-indent-offset   my-indent-offset
               web-mode-css-indent-offset    my-indent-offset
@@ -412,12 +424,9 @@
 (setq vlf-application 'dont-ask)
 
 ;; Set up ESS to be sane when loaded.
-(add-hook 'ess-mode-hook (lambda ()
-                           (local-set-key (kbd "C-<return>") 'my-ess-eval-line-and-newline)
-                           (local-set-key (kbd "C-M-<return>") 'my-ess-eval-last)
-                           (setq ess-ask-for-ess-directory nil
-                                 ess-fancy-comments        nil
-                                 ess-indent-offset         my-indent-offset)))
+
+(setq-default phi-search-case-sensitive 'guess)
+(add-hook 'ess-mode-hook 'my-setup-ess-mode)
 
 ;;;;------------------------------------
 ;;;; Appearance.
@@ -436,16 +445,18 @@
 ;; Disable fringes (they don't work well with high-DPI displays anyway).
 (fringe-mode 0)
 
-;; Set initial frame size.
-(setq default-frame-alist `((width . ,my-frame-width) (height . ,my-frame-height)))
+;; Set initial frame size and font.
+(setq default-frame-alist `((width . ,my-frame-width) (height . ,my-frame-height)
+                            (font . "Consolas-11.0:antialias=subpixel")))
 
 ;; Set up the configured fonts.
 (if (daemonp)
     (add-hook 'after-make-frame-functions (lambda (frame)
-                                            (with-selected-frame frame
-                                              (my-set-fonts my-fonts my-font-size))
+                                            ;(with-selected-frame frame
+                                            ;  (my-set-fonts my-fonts my-font-size))
                                             (raise-frame frame)))
-  (my-set-fonts my-fonts my-font-size))
+                                        ;(my-set-fonts my-fonts my-font-size))
+  )
 
 ;; Set frame title.
 (setq frame-title-format '("%b"))
@@ -595,7 +606,9 @@
 (global-set-key (kbd "C-S-n") 'forward-paragraph)
 (global-set-key (kbd "C-S-p") 'backward-paragraph)
 
-;; Swiper is much better than i-search.
+;; Search bindings.
+(global-set-key (kbd "C-s") 'phi-search)
+(global-set-key (kbd "C-r") 'phi-search-backward)
 (global-set-key (kbd "C-c s") 'swiper-all)
 
 ;; Easy evaluation of regions in `emacs-lisp-mode'.
