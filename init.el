@@ -10,7 +10,7 @@
 ;;; License:
 
 ;;
-;; Copyright 2018 Philip Arvidsson
+;; Copyright 2019 Philip Arvidsson
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 ;; associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -43,10 +43,10 @@
 
 ;; Specifies the initial width and height (in number of characters) of the Emacs frame.
 (defconst my-frame-width 106)
-(defconst my-frame-height (if (string= (system-name) "PHILIP-XPS") 34 54))
+(defconst my-frame-height (if (string= (system-name) "PHILIP-XPS") 28 48))
 
 ;; The font size (in points) to use.
-(defconst my-font-size "11.0")
+(defconst my-font-size "12.0")
 
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
 ;; font at the top will be prioritized.
@@ -113,15 +113,17 @@
 (unless package-archive-contents
   ;; Enable MELPA package repostiory.
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-  (package-refresh-contents)
+   (package-refresh-contents)
 
   ;; Install packages from (M)ELPA.
   (dolist (it '(auctex
                 company
                 csharp-mode
+                ;cyberpunk-theme
                 diminish
                 ess
                 flycheck
+                fsharp-mode
                 glsl-mode
                 groovy-mode
                 hy-mode
@@ -217,13 +219,13 @@
 (defun my-open-file-manager ()
   "Run the configured external file manager executable."
   (interactive)
-  (let ((args (mapcar 'eval my-file-manager-args)))
+  (let ((args (mapc 'eval my-file-manager-args)))
     (apply 'call-process (append (list my-file-manager nil 0 nil) args))))
 
 (defun my-open-terminal ()
   "Run the configured external terminal executable."
   (interactive)
-  (let ((args (mapcar 'eval my-terminal-args)))
+  (let ((args (mapc 'eval my-terminal-args)))
     (apply 'call-process (append (list my-terminal nil 0 nil) args))))
 
 (defun my-set-fonts (font-names font-size)
@@ -283,6 +285,265 @@
         ess-fancy-comments        nil
         ess-indent-offset         my-indent-offset
         inferior-R-args           "--no-save --quiet"))
+
+(defun my-setup-prettify-symbols-mode ()
+  "Set up `prettify-symbols-mode'."
+  (setq prettify-symbols-unprettify-at-point t)
+  (mapc (lambda (it)
+          (push it prettify-symbols-alist))
+          '(;; ("!!!"    .    "!!!")
+            ("!!"     .    "‼️")
+            ("!="     .    "≠")
+            ;; ("!=<"    .    "!=<")
+            ;; ("!=="    .    "!==")
+            ;; ("!>"     .    "!>")
+            ;; ("!≡"     .    "!≡")
+            ;; ("!≡≡"    .    "!≡≡")
+            ;; ("##"     .    "##")
+            ;; ("#("     .    "#(")
+            ;; ("#>"     .    "#>")
+            ;; ("#?"     .    "#?")
+            ;; ("#_"     .    "#_")
+            ;; ("#_("    .    "#_(")
+            ;; ("#{"     .    "#{")
+            ;; ("$>"     .    "$>")
+            ;; ("%<%"    .    "%<%")
+            ;; ("%="     .    "%=")
+            ;; ("%>"     .    "%>")
+            ;; ("%>%"    .    "%>%")
+            ;; ("&%"     .    "&%")
+            ("&&"     .    "∧")
+            ;; ("&&&"    .    "&&&")
+            ;; ("&*"     .    "&*")
+            ;; ("&+"     .    "&+")
+            ;; ("&-"     .    "&-")
+            ;; ("&/"     .    "&/")
+            ;; ("&="     .    "&=")
+            ;; ("&>"     .    "&>")
+            ;; ("***"    .    "***")
+            ;; ("*/"     .    "*/")
+            ;; ("*="     .    "*=")
+            ;; ("*>"     .    "*>")
+            ;; ("++"     .    "++")
+            ;; ("+++"    .    "+++")
+            ;; ("++="    .    "++=")
+            ;; ("+="     .    "+=")
+            ;; ("+>"     .    "+>")
+            ;; ("-+-"    .    "-+-")
+            ;; ("--"     .    "–")
+            ;; ("---"    .    "—")
+            ;; ("-->"    .    "-->")
+            ;; ("-<"     .    "-<")
+            ;; ("-<<"    .    "-<<")
+            ;; ("-<|"    .    "-<|")
+            ;; ("-="     .    "-=")
+            ("->"     .    "→")
+            ;; ("->>"    .    "->>")
+            ;; ("-\\/"   .    "-\\/")
+            ;; ("-|>"    .    "-|>")
+            ;; (".."     .    "..")
+            ;; ("..."    .    "...")
+            ;; ("..<"    .    "..<")
+            ;; (".="     .    ".=")
+            ;; (".>"     .    ".>")
+            ;; (".~"     .    ".~")
+            ;; ("/*"     .    "/*")
+            ;; ("/**"    .    "/**")
+            ;; ("//"     .    "//")
+            ;; ("///"    .    "///")
+            ("/="     .    "≠")
+            ;; ("/=="    .    "/==")
+            ;; ("/>"     .    "/>")
+            ;; (":("     .    ":(")
+            ;; (":)"     .    ":)")
+            ;; (":-("    .    ":-(")
+            ;; (":-)"    .    ":-)")
+            ;; (":/"     .    ":/")
+            ;; (":3"     .    ":3")
+            ;; ("::"     .    "::")
+            ;; (":::"    .    ":::")
+            ;; (":<:"    .    ":<:")
+            ;; (":="     .    ":=")
+            ;; (":=>"    .    ":=>")
+            ;; (":>"     .    ":>")
+            ;; (":>:"    .    ":>:")
+            ;; (":D"     .    ":D")
+            ;; (":P"     .    ":P")
+            ;; (":\\"    .    ":\\")
+            ;; (":≡"     .    ":≡")
+            ;; ("<!"     .    "<!")
+            ;; ("<!--"   .    "<!--")
+            ;; ("<!>"    .    "<!>")
+            ;; ("<#"     .    "<#")
+            ;; ("<#>"    .    "<#>")
+            ;; ("<$"     .    "<$")
+            ;; ("<$>"    .    "<$>")
+            ;; ("<%"     .    "<%")
+            ;; ("<%>"    .    "<%>")
+            ;; ("<&"     .    "<&")
+            ;; ("<&>"    .    "<&>")
+            ;; ("<*"     .    "<*")
+            ;; ("<**>"   .    "<**>")
+            ;; ("<*>"    .    "<*>")
+            ;; ("<+"     .    "<+")
+            ;; ("<+>"    .    "<+>")
+            ("<-"     .    "←")
+            ;; ("<--"    .    "<--")
+            ;; ("<-->"   .    "<-->")
+            ;; ("<-<"    .    "<-<")
+            ;; ("<->"    .    "<->")
+            ;; ("<."     .    "<.")
+            ;; ("<.>"    .    "<.>")
+            ;; ("</"     .    "</")
+            ;; ("</>"    .    "</>")
+            ;; ("<:"     .    "<:")
+            ;; ("<:>"    .    "<:>")
+            ("<<"     .    "≪")
+            ;; ("<<-"    .    "<<-")
+            ("<<<"    .    "⋘")
+            ;; ("<<="    .    "<<=")
+            ;; ("<<=="   .    "<<==")
+            ;; ("<<^"    .    "<<^")
+            ;; ("<<|"    .    "<<|")
+            ;; ("<<~"    .    "<<~")
+            ("<="     .    "≤")
+            ;; ("<=<"    .    "<=<")
+            ;; ("<=="    .    "<==")
+            ;; ("<==>"   .    "<==>")
+            ("<=>"    .    "⇔")
+            ("<>"     .    "◇")
+            ;; ("<?"     .    "<?")
+            ;; ("<?>"    .    "<?>")
+            ;; ("<@"     .    "<@")
+            ;; ("<@>"    .    "<@>")
+            ;; ("<\""    .    "<\"")
+            ;; ("<\">"   .    "<\">")
+            ;; ("<\\"    .    "<\\")
+            ;; ("<\\>"   .    "<\\>")
+            ;; ("<^"     .    "<^")
+            ;; ("<^>"    .    "<^>")
+            ("<|"     .    "◁")
+            ;; ("<|-"    .    "<|-")
+            ;; ("<|>"    .    "<|>")
+            ;; ("<~"     .    "<~")
+            ;; ("<~<"    .    "<~<")
+            ;; ("<~>"    .    "<~>")
+            ;; ("<~~"    .    "<~~")
+            ;; ("=/="    .    "=/=")
+            ;; ("=="     .    "==")
+            ;; ("==<"    .    "==<")
+            ("==="    .    "≡")
+            ;; ("==>"    .    "==>")
+            ;; ("==>>"   .    "==>>")
+            ("=>"     .    "⇒")
+            ;; ("=>>"    .    "=>>")
+            ;; ("=~"     .    "=~")
+            ;; ("=~="    .    "=~=")
+            ;; (">!="    .    ">!=")
+            ;; (">-"     .    ">-")
+            ;; (">->"    .    ">->")
+            (">="     .    "≥")
+            ;; (">=="    .    ">==")
+            ;; (">=>"    .    ">=>")
+            (">>"     .    "≫")
+            ;; (">>-"    .    ">>-")
+            (">>>"    .    "⋙")
+            ;; (">>^"    .    ">>^")
+            ;; (">>|"    .    ">>|")
+            ;; ("?."     .    "?.")
+            ;; ("?="     .    "?=")
+            ;; ("?>"     .    "?>")
+            ;; ("??"     .    "??")
+            ;; ("???"    .    "???")
+            ;; ("?~"     .    "?~")
+            ;; ("@>"     .    "@>")
+            ;; ("[["     .    "[[")
+            ;; ("\">"    .    "\">")
+            ;; ("\\/-"   .    "\\/-")
+            ;; ("\\>"    .    "\\>")
+            ;; ("\\\\"   .    "\\\\")
+            ;; ("]]"     .    "]]")
+            ;; ("^."     .    "^.")
+            ;; ("^.."    .    "^..")
+            ;; ("^<<"    .    "^<<")
+            ;; ("^="     .    "^=")
+            ;; ("^>"     .    "^>")
+            ;; ("^>>"    .    "^>>")
+            ;; ("^?"     .    "^?")
+            ("_|_"    .    "⊥")
+            ("alpha"   .    "α")
+            ("beta"    .    "β")
+            ("gamma"   .    "")
+            ("delta"   .    "γ")
+            ("epsilon" .    "ε")
+            ("zeta"    .    "ζ")
+            ("eta"     .    "η")
+            ("theta"   .    "θ")
+            ("iota"    .    "ι")
+            ("kappa"   .    "κ")
+            ("lambda"  .    "λ")
+            ("mu"      .    "μ")
+            ("nu"      .    "ν")
+            ("xi"      .    "ξ")
+            ("omicron" .    "ο")
+            ("pi"      .    "π")
+            ("rho"     .    "ρ")
+            ("sigma"   .    "σ")
+            ("tau"     .    "τ")
+            ("upsilon" .    "υ")
+            ("phi"     .    "φ")
+            ("chi"     .    "χ")
+            ("psi"     .    "ψ")
+            ("omega"   .    "ω")
+            ("Alpha"   .    "Α")
+            ("Beta"    .    "Β")
+            ("Gamma"   .    "Γ")
+            ("Delta"   .    "Δ")
+            ("Epsilon" .    "Ε")
+            ("Zeta"    .    "Ζ")
+            ("Eta"     .    "Η")
+            ("Theta"   .    "Θ")
+            ("Iota"    .    "Ι")
+            ("Kappa"   .    "Κ")
+            ("Lambda"  .    "Λ")
+            ("Mu"      .    "Μ")
+            ("Nu"      .    "Ν")
+            ("Xi"      .    "Ξ")
+            ("Omicron" .    "Ο")
+            ("Pi"      .    "Π")
+            ("Rho"     .    "Ρ")
+            ("Sigma"   .    "Σ")
+            ("Tau"     .    "Τ")
+            ("Upsilon" .    "Υ")
+            ("Phi"     .    "Φ")
+            ("Chi"     .    "Χ")
+            ("Psi"     .    "Ψ")
+            ("Omega"   .    "Ω")
+            ;; ("|+|"    .    "|+|")
+            ;; ("|-"     .    "|-")
+            ;; ("|-->"   .    "|-->")
+            ("|->"    .    "↦")
+            ;; ("|<<"    .    "|<<")
+            ;; ("|="     .    "|=")
+            ;; ("|==>"   .    "|==>")
+            ;; ("|=>"    .    "|=>")
+            ("|>"     .    "▷")
+            ;; ("|>-"    .    "|>-")
+            ;; ("|>>"    .    "|>>")
+            ("||"     .    "∨")
+            ;; ("||-"    .    "||-")
+            ;; ("||>"    .    "||>")
+            ;; ("|||"    .    "|||")
+            ;; ("~="     .    "~=")
+            ;; ("~>"     .    "~>")
+            ;; ("~>>"    .    "~>>")
+            ;; ("~~>"    .    "~~>")
+            ;; ("≡:≡"    .    "≡:≡")
+            ;; ("≡≡"     .    "≡≡")
+            ;; ("fun"    .    "λ")
+            ;; ("≡≡≡"    .    "≡≡≡")
+            ))
+  (prettify-symbols-mode))
 
 ;;;;------------------------------------
 ;;;; Behavior.
@@ -348,6 +609,7 @@
 ;; Indentation stuff.
 (setq-default c-basic-offset                my-indent-offset
               css-indent-offset             my-indent-offset
+              ess-indent-offset             my-indent-offset
               groovy-indent-offset          my-indent-offset
               js-indent-level               my-indent-offset
               python-indent-offset          my-indent-offset
@@ -424,9 +686,13 @@
 (setq vlf-application 'dont-ask)
 
 ;; Set up ESS to be sane when loaded.
-
-(setq-default phi-search-case-sensitive 'guess)
 (add-hook 'ess-mode-hook 'my-setup-ess-mode)
+
+;; Make Phi Search work in a more intuitive manner.
+(setq-default phi-search-case-sensitive 'guess)
+
+;; Set up pretty symbols.
+(add-hook 'prog-mode-hook 'my-setup-prettify-symbols-mode)
 
 ;;;;------------------------------------
 ;;;; Appearance.
@@ -447,16 +713,15 @@
 
 ;; Set initial frame size and font.
 (setq default-frame-alist `((width . ,my-frame-width) (height . ,my-frame-height)
-                            (font . "Consolas-11.0:antialias=subpixel")))
+                            (font . ,(format "%s-%s:antialias=subpixel" (car my-fonts) my-font-size))))
 
 ;; Set up the configured fonts.
-(if (daemonp)
+;(if (daemonp)
     (add-hook 'after-make-frame-functions (lambda (frame)
-                                            ;(with-selected-frame frame
-                                            ;  (my-set-fonts my-fonts my-font-size))
+                                            (with-selected-frame frame
+                                              (my-set-fonts my-fonts my-font-size))
                                             (raise-frame frame)))
-                                        ;(my-set-fonts my-fonts my-font-size))
-  )
+  ;)
 
 ;; Set frame title.
 (setq frame-title-format '("%b"))
@@ -505,9 +770,10 @@
 ;;(add-hook 'auto-revert-mode-hook '(diminish 'auto-revert-mode)) ;; <-- Doesn't seem to be needed?
 
 ;; Load and configure the theme.
-(setq spacemacs-theme-comment-bg nil)
-;      ;;spacemacs-theme-comment-italic t
-;      ;;spacemacs-theme-custom-colors '((comment-light . "#2aa1ae")))
+(setq spacemacs-theme-comment-bg nil
+      spacemacs-theme-comment-italic t
+      spacemacs-theme-custom-colors '((comment-light . "#2aa1ae")))
+
 (if (daemonp)
     (add-hook 'after-make-frame-functions (lambda (frame)
                                             (with-selected-frame frame
@@ -519,6 +785,11 @@
                                   (set-face-attribute 'whitespace-line nil
                                                       :background "#fae9c3"
                                                       :foreground nil)))
+
+;; Fix for `fsharp-mode' when using the `spacemacs-light' theme.
+(add-hook 'fsharp-mode-hook (lambda ()
+                              (set-face-attribute 'fsharp-ui-operator-face nil
+                                                  :foreground "#ba2f59")))
 
 ;; I don't like how `LaTeX-mode' changes font sizes, does subscripts, etc.
 (with-eval-after-load "latex"
