@@ -46,13 +46,12 @@
 (defconst my-frame-height (if (string= (system-name) "PHILIP-XPS") 28 48))
 
 ;; The font size (in points) to use.
-(defconst my-font-size "12.0")
+(defconst my-font-size "11.0")
 
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
 ;; font at the top will be prioritized.
-(defconst my-fonts (cond (my-is-linux   '("Liberation Mono"))
-                         (my-is-windows '("Consolas"
-                                          "Symbola monospacified for Consolas"))))
+(defconst my-fonts (cond (my-is-linux   '("DejaVu Sans Mono"))
+                         (my-is-windows '("DejaVu Sans Mono"))))
 
 ;; Indentation (in number of spaces).
 (defconst my-indent-offset 2)
@@ -107,6 +106,7 @@
 ;;;;------------------------------------
 
 (require 'package)
+(setq package-user-dir "C:/Users/Philip/.emacs.d/packages")
 (package-initialize)
 
 ;; Make sure we have downloaded the package archive metadata and installed all packages we need.
@@ -119,7 +119,6 @@
   (dolist (it '(auctex
                 company
                 csharp-mode
-                ;cyberpunk-theme
                 diminish
                 ess
                 flycheck
@@ -143,7 +142,7 @@
                 spacemacs-theme
                 swiper
                 tide
-                unicode-fonts
+                ;unicode-fonts
                 vlf
                 web-mode
                 xah-math-input))
@@ -153,8 +152,8 @@
   ;; Make sure to install OmniSharp server here so I don't have to do it manually.
   (omnisharp--install-server nil t))
 
-(require 'unicode-fonts)
-(unicode-fonts-setup)
+;; (require 'unicode-fonts)
+;; (unicode-fonts-setup)
 
 ;; Hy-mode won't auto-load on .hy-files without this.
 (require 'hy-mode)
@@ -219,13 +218,13 @@
 (defun my-open-file-manager ()
   "Run the configured external file manager executable."
   (interactive)
-  (let ((args (mapc 'eval my-file-manager-args)))
+  (let ((args (mapcar 'eval my-file-manager-args)))
     (apply 'call-process (append (list my-file-manager nil 0 nil) args))))
 
 (defun my-open-terminal ()
   "Run the configured external terminal executable."
   (interactive)
-  (let ((args (mapc 'eval my-terminal-args)))
+  (let ((args (mapcar 'eval my-terminal-args)))
     (apply 'call-process (append (list my-terminal nil 0 nil) args))))
 
 (defun my-set-fonts (font-names font-size)
@@ -291,9 +290,83 @@
   (setq prettify-symbols-unprettify-at-point t)
   (mapc (lambda (it)
           (push it prettify-symbols-alist))
-          '(;; ("!!!"    .    "!!!")
-            ("!!"     .    "‼️")
-            ("!="     .    "≠")
+          '(("!!"      .    "‼")
+            ("!="      .    "≠")
+            ("&&"      .    "∧")
+            ("->"      .    "→")
+            ("/="      .    "≠")
+            ("<-"      .    "←")
+            ("<<"      .    "≪")
+            ("<<<"     .    "⋘")
+            ("<="      .    "≤")
+            ("<=>"     .    "⇔")
+            ("<>"      .    "◇")
+            ("<|"      .    "◁")
+            ("<~"      .    "⇜")
+            ("<~>"     .    "↭")
+            ("<~~"     .    "⬳")
+            ("=="      .    "＝")
+            ("==="     .    "≡")
+            ("=>"      .    "⇒")
+            (">="      .    "≥")
+            (">>"      .    "≫")
+            (">>>"     .    "⋙")
+            ("Alpha"   .    "Α")
+            ("Beta"    .    "Β")
+            ("Chi"     .    "Χ")
+            ("Delta"   .    "Δ")
+            ("Epsilon" .    "Ε")
+            ("Eta"     .    "Η")
+            ("Gamma"   .    "Γ")
+            ("Iota"    .    "Ι")
+            ("Kappa"   .    "Κ")
+            ("Lambda"  .    "Λ")
+            ("Mu"      .    "Μ")
+            ("Nu"      .    "Ν")
+            ("Omega"   .    "Ω")
+            ("Omicron" .    "Ο")
+            ("Phi"     .    "Φ")
+            ("Pi"      .    "Π")
+            ("Psi"     .    "Ψ")
+            ("Rho"     .    "Ρ")
+            ("Sigma"   .    "Σ")
+            ("Tau"     .    "Τ")
+            ("Theta"   .    "Θ")
+            ("Upsilon" .    "Υ")
+            ("Xi"      .    "Ξ")
+            ("Zeta"    .    "Ζ")
+            ("_|_"     .    "⊥")
+            ("alpha"   .    "α")
+            ("beta"    .    "β")
+            ("chi"     .    "χ")
+            ("delta"   .    "γ")
+            ("epsilon" .    "ε")
+            ("eta"     .    "η")
+            ("gamma"   .    "γ")
+            ("iota"    .    "ι")
+            ("kappa"   .    "κ")
+            ("lambda"  .    "λ")
+            ("mu"      .    "μ")
+            ("nu"      .    "ν")
+            ("omega"   .    "ω")
+            ("omicron" .    "ο")
+            ("phi"     .    "φ")
+            ("pi"      .    "π")
+            ("psi"     .    "ψ")
+            ("rho"     .    "ρ")
+            ("sigma"   .    "σ")
+            ("tau"     .    "τ")
+            ("theta"   .    "θ")
+            ("upsilon" .    "υ")
+            ("xi"      .    "ξ")
+            ("zeta"    .    "ζ")
+            ("|->"     .    "↦")
+            ("|>"      .    "▷")
+            ("||"      .    "∨")
+            ("~>"      .    "⇝")
+            ("~~>"     .    "⟿")
+
+            ;; ("!!!"    .    "!!!")
             ;; ("!=<"    .    "!=<")
             ;; ("!=="    .    "!==")
             ;; ("!>"     .    "!>")
@@ -312,7 +385,6 @@
             ;; ("%>"     .    "%>")
             ;; ("%>%"    .    "%>%")
             ;; ("&%"     .    "&%")
-            ("&&"     .    "∧")
             ;; ("&&&"    .    "&&&")
             ;; ("&*"     .    "&*")
             ;; ("&+"     .    "&+")
@@ -337,7 +409,6 @@
             ;; ("-<<"    .    "-<<")
             ;; ("-<|"    .    "-<|")
             ;; ("-="     .    "-=")
-            ("->"     .    "→")
             ;; ("->>"    .    "->>")
             ;; ("-\\/"   .    "-\\/")
             ;; ("-|>"    .    "-|>")
@@ -351,7 +422,6 @@
             ;; ("/**"    .    "/**")
             ;; ("//"     .    "//")
             ;; ("///"    .    "///")
-            ("/="     .    "≠")
             ;; ("/=="    .    "/==")
             ;; ("/>"     .    "/>")
             ;; (":("     .    ":(")
@@ -387,7 +457,6 @@
             ;; ("<*>"    .    "<*>")
             ;; ("<+"     .    "<+")
             ;; ("<+>"    .    "<+>")
-            ("<-"     .    "←")
             ;; ("<--"    .    "<--")
             ;; ("<-->"   .    "<-->")
             ;; ("<-<"    .    "<-<")
@@ -398,20 +467,15 @@
             ;; ("</>"    .    "</>")
             ;; ("<:"     .    "<:")
             ;; ("<:>"    .    "<:>")
-            ("<<"     .    "≪")
             ;; ("<<-"    .    "<<-")
-            ("<<<"    .    "⋘")
             ;; ("<<="    .    "<<=")
             ;; ("<<=="   .    "<<==")
             ;; ("<<^"    .    "<<^")
             ;; ("<<|"    .    "<<|")
             ;; ("<<~"    .    "<<~")
-            ("<="     .    "≤")
             ;; ("<=<"    .    "<=<")
             ;; ("<=="    .    "<==")
             ;; ("<==>"   .    "<==>")
-            ("<=>"    .    "⇔")
-            ("<>"     .    "◇")
             ;; ("<?"     .    "<?")
             ;; ("<?>"    .    "<?>")
             ;; ("<@"     .    "<@")
@@ -422,32 +486,22 @@
             ;; ("<\\>"   .    "<\\>")
             ;; ("<^"     .    "<^")
             ;; ("<^>"    .    "<^>")
-            ("<|"     .    "◁")
             ;; ("<|-"    .    "<|-")
             ;; ("<|>"    .    "<|>")
-            ;; ("<~"     .    "<~")
             ;; ("<~<"    .    "<~<")
-            ;; ("<~>"    .    "<~>")
-            ;; ("<~~"    .    "<~~")
             ;; ("=/="    .    "=/=")
-            ;; ("=="     .    "==")
             ;; ("==<"    .    "==<")
-            ("==="    .    "≡")
             ;; ("==>"    .    "==>")
             ;; ("==>>"   .    "==>>")
-            ("=>"     .    "⇒")
             ;; ("=>>"    .    "=>>")
             ;; ("=~"     .    "=~")
             ;; ("=~="    .    "=~=")
             ;; (">!="    .    ">!=")
             ;; (">-"     .    ">-")
             ;; (">->"    .    ">->")
-            (">="     .    "≥")
             ;; (">=="    .    ">==")
             ;; (">=>"    .    ">=>")
-            (">>"     .    "≫")
             ;; (">>-"    .    ">>-")
-            (">>>"    .    "⋙")
             ;; (">>^"    .    ">>^")
             ;; (">>|"    .    ">>|")
             ;; ("?."     .    "?.")
@@ -470,77 +524,23 @@
             ;; ("^>"     .    "^>")
             ;; ("^>>"    .    "^>>")
             ;; ("^?"     .    "^?")
-            ("_|_"    .    "⊥")
-            ("alpha"   .    "α")
-            ("beta"    .    "β")
-            ("gamma"   .    "")
-            ("delta"   .    "γ")
-            ("epsilon" .    "ε")
-            ("zeta"    .    "ζ")
-            ("eta"     .    "η")
-            ("theta"   .    "θ")
-            ("iota"    .    "ι")
-            ("kappa"   .    "κ")
-            ("lambda"  .    "λ")
-            ("mu"      .    "μ")
-            ("nu"      .    "ν")
-            ("xi"      .    "ξ")
-            ("omicron" .    "ο")
-            ("pi"      .    "π")
-            ("rho"     .    "ρ")
-            ("sigma"   .    "σ")
-            ("tau"     .    "τ")
-            ("upsilon" .    "υ")
-            ("phi"     .    "φ")
-            ("chi"     .    "χ")
-            ("psi"     .    "ψ")
-            ("omega"   .    "ω")
-            ("Alpha"   .    "Α")
-            ("Beta"    .    "Β")
-            ("Gamma"   .    "Γ")
-            ("Delta"   .    "Δ")
-            ("Epsilon" .    "Ε")
-            ("Zeta"    .    "Ζ")
-            ("Eta"     .    "Η")
-            ("Theta"   .    "Θ")
-            ("Iota"    .    "Ι")
-            ("Kappa"   .    "Κ")
-            ("Lambda"  .    "Λ")
-            ("Mu"      .    "Μ")
-            ("Nu"      .    "Ν")
-            ("Xi"      .    "Ξ")
-            ("Omicron" .    "Ο")
-            ("Pi"      .    "Π")
-            ("Rho"     .    "Ρ")
-            ("Sigma"   .    "Σ")
-            ("Tau"     .    "Τ")
-            ("Upsilon" .    "Υ")
-            ("Phi"     .    "Φ")
-            ("Chi"     .    "Χ")
-            ("Psi"     .    "Ψ")
-            ("Omega"   .    "Ω")
+            ;; ("fun"    .    "λ")
             ;; ("|+|"    .    "|+|")
             ;; ("|-"     .    "|-")
             ;; ("|-->"   .    "|-->")
-            ("|->"    .    "↦")
             ;; ("|<<"    .    "|<<")
             ;; ("|="     .    "|=")
             ;; ("|==>"   .    "|==>")
             ;; ("|=>"    .    "|=>")
-            ("|>"     .    "▷")
             ;; ("|>-"    .    "|>-")
             ;; ("|>>"    .    "|>>")
-            ("||"     .    "∨")
             ;; ("||-"    .    "||-")
             ;; ("||>"    .    "||>")
             ;; ("|||"    .    "|||")
             ;; ("~="     .    "~=")
-            ;; ("~>"     .    "~>")
             ;; ("~>>"    .    "~>>")
-            ;; ("~~>"    .    "~~>")
             ;; ("≡:≡"    .    "≡:≡")
             ;; ("≡≡"     .    "≡≡")
-            ;; ("fun"    .    "λ")
             ;; ("≡≡≡"    .    "≡≡≡")
             ))
   (prettify-symbols-mode))
@@ -599,11 +599,9 @@
 (setq scroll-step 1)
 
 ;; Mode mappings.
-(dolist (it '(("\\.h\\'"   . c++-mode)  ; <-- Emacs will use `c-mode' in .h-files without this.
-              ("\\.js\\'"  . js2-mode)
-              ("\\.jsx\\'" . web-mode)
-              ("\\.ts\\'"  . my-tide-mode)
-              ("\\.tsx\\'" . my-tide-mode)))
+(dolist (it '(("\\.h\\'"    . c++-mode)  ; <-- Emacs will use `c-mode' in .h-files without this.
+              ("\\.jsx?\\'" . js2-mode)
+              ("\\.tsx?\\'" . my-tide-mode)))
   (add-to-list 'auto-mode-alist it))
 
 ;; Indentation stuff.
@@ -652,7 +650,7 @@
            projectile-globally-ignored-directories)
 
    projectile-globally-ignored-files
-   (append '("#*#" "*.#*" "*.dll" "*.exe" "*.pyc" "*~" "gradlew" "gradlew.bat")
+   (append '("#*#" "*.#*" "*.dll" "*.exe" "*.mp4" "*.pyc" "*~" "gradlew" "gradlew.bat")
            projectile-globally-ignored-files)
 
    ;; Enable Projectile to be used anywhere (even without project files).
@@ -708,20 +706,21 @@
 ;; (setq-default display-line-numbers-width 3) ; <-- Prevent 'jump' in margin size at 100 LOC.
 ;; (global-display-line-numbers-mode t)
 
+;; More visual ease by increasing the line spacing.
+(setq-default line-spacing 8)
+
 ;; Disable fringes (they don't work well with high-DPI displays anyway).
 (fringe-mode 0)
 
 ;; Set initial frame size and font.
-(setq default-frame-alist `((width . ,my-frame-width) (height . ,my-frame-height)
-                            (font . ,(format "%s-%s:antialias=subpixel" (car my-fonts) my-font-size))))
+(setq default-frame-alist `((width . ,my-frame-width) (height . ,my-frame-height) nil))
 
 ;; Set up the configured fonts.
-;(if (daemonp)
+(if (daemonp)
     (add-hook 'after-make-frame-functions (lambda (frame)
                                             (with-selected-frame frame
-                                              (my-set-fonts my-fonts my-font-size))
-                                            (raise-frame frame)))
-  ;)
+                                              (my-set-fonts my-fonts my-font-size))))
+  (my-set-fonts my-fonts my-font-size))
 
 ;; Set frame title.
 (setq frame-title-format '("%b"))
@@ -893,7 +892,8 @@
 ;;;; Finalization.
 ;;;;------------------------------------
 
-(let ((elapsed (float-time (time-subtract (current-time) my-start-time))))
-  (setq initial-scratch-message (format ";; Emacs initialized in %.3fs\n\n" elapsed)))
+(let ((elapsed (float-time (time-subtract (current-time) my-start-time)))
+      (message ";; Emacs %s initialized in %.3fs\n\n"))
+  (setq initial-scratch-message (format message emacs-version elapsed)))
 
 ;;; init.el ends here
