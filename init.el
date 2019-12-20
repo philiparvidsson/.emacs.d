@@ -51,7 +51,7 @@
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
 ;; font at the top will be prioritized.
 (defconst my-fonts (cond (my-is-linux   '("DejaVu Sans Mono"))
-                         (my-is-windows '("DejaVu Sans Mono"))))
+                         (my-is-windows '("Consolas"))))
 
 ;; Indentation (in number of spaces).
 (defconst my-indent-offset 2)
@@ -707,7 +707,7 @@
 ;; (global-display-line-numbers-mode t)
 
 ;; More visual ease by increasing the line spacing.
-(setq-default line-spacing 8)
+(setq-default line-spacing 4)
 
 ;; Disable fringes (they don't work well with high-DPI displays anyway).
 (fringe-mode 0)
