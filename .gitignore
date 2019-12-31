@@ -1,6 +1,5 @@
 *.elc
 *~
-.mc-lists.el
 /.cache/
 /.python-environments/
 /auto-save-list/
