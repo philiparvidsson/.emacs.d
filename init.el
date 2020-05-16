@@ -46,7 +46,7 @@
 (defconst my-frame-height (if (string= (system-name) "PHILIP-XPS") 28 48))
 
 ;; The font size (in points) to use.
-(defconst my-font-size "11.0")
+(defconst my-font-size "12.0")
 
 ;; Specifies the fonts to use.  This is a list because all fonts don't contain all charactes.  The
 ;; font at the top will be prioritized.
@@ -54,7 +54,7 @@
                          (my-is-windows '("Consolas"))))
 
 ;; Indentation (in number of spaces).
-(defconst my-indent-offset 2)
+(defconst my-indent-offset 4)
 
 ;; Maximum preferred line width (affects word paragraph filling and `whitespace-mode', etc.).
 (defconst my-line-width 100)
@@ -95,6 +95,7 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 
 ;; Prefer UTF-8 and Unix line endings.
+(set-language-environment "UTF-8")
 (prefer-coding-system 'utf-8)
 (setq-default buffer-file-coding-system 'utf-8)
 
@@ -106,7 +107,7 @@
 ;;;;------------------------------------
 
 (require 'package)
-(setq package-user-dir "C:/Users/Philip/.emacs.d/packages")
+;;(setq package-user-dir "C:/Users/Philip/.emacs.d/packages")
 (package-initialize)
 
 ;; Make sure we have downloaded the package archive metadata and installed all packages we need.
@@ -120,6 +121,9 @@
                 company
                 csharp-mode
                 diminish
+                doom-modeline
+                doom-themes
+                elm-mode
                 ess
                 flycheck
                 fsharp-mode
@@ -138,11 +142,9 @@
                 phi-search
                 projectile
                 rainbow-mode
-                spaceline
                 spacemacs-theme
                 swiper
                 tide
-                ;unicode-fonts
                 vlf
                 web-mode
                 xah-math-input))
@@ -692,6 +694,32 @@
 ;; Set up pretty symbols.
 (add-hook 'prog-mode-hook 'my-setup-prettify-symbols-mode)
 
+;; Automatic code-formatting on save.
+(add-hook 'after-save-hook
+          (lambda ()
+            (let ((filename buffer-file-name)
+                  (file-ext (file-name-extension buffer-file-name)))
+
+              ;; Python; format files on save using `black'.
+              (if (string= file-ext "py")
+                  (call-process "black" nil nil nil filename))
+
+              ;; Elm; format files on save using `elm-format'.
+              (if (string= file-ext "elm")
+                  (call-process "elm-format" nil nil nil "--yes" filename))
+
+              ;; F#; format files on save using `fantomas-tool'.
+              (if (string= file-ext "fs")
+                  (call-process "fantomas" nil nil nil filename))
+
+              ;; JavaScript; format files on save using `prettier'.
+              (if (string= file-ext "js")
+                  (call-process "prettier" nil nil nil "--write" filename))
+
+              ;; HTML; format files on save using `prettier'.
+              (if (string= file-ext "html")
+                  (call-process "prettier" nil nil nil "--write" filename)))))
+
 ;;;;------------------------------------
 ;;;; Appearance.
 ;;;;------------------------------------
@@ -758,7 +786,7 @@
 (with-eval-after-load "auto-fill-function" (diminish 'auto-fill-function))
 (with-eval-after-load "company"            (diminish 'company-mode))
 (with-eval-after-load "eldoc"              (diminish 'eldoc-mode))
-(with-eval-after-load "flycheck"           (diminish 'flycheck-mode)) ;; <-- Only with `spaceline'!
+;;(with-eval-after-load "flycheck"           (diminish 'flycheck-mode)) ;; <-- Only with `spaceline'!
 (with-eval-after-load "omnisharp"          (diminish 'omnisharp-mode))
 (with-eval-after-load "projectile"         (diminish 'projectile-mode))
 (with-eval-after-load "rainbow-mode"       (diminish 'rainbow-mode))
@@ -797,8 +825,23 @@
 
 ;; Make the mode line look much better. Unforunately, this adds a significant amount of time to the
 ;; initialization phase. :-(
-(require 'spaceline-config)
-(spaceline-spacemacs-theme)
+(doom-themes-neotree-config)
+;; (doom-themes-visual-bell-config)
+(doom-modeline-mode 1)
+(setq doom-modeline-buffer-file-name-style 'relative-to-project
+      doom-modeline-major-mode-icon nil)
+
+;; Make sure NeoTree follows current file automatically.
+(setq-default neo-autorefresh t)
+
+;; Center frame on display.
+(add-hook 'window-setup-hook
+          (lambda ()
+            (let ((frame (selected-frame)))
+              (set-frame-position
+               frame
+               (/ (- (display-pixel-width) (frame-outer-width frame)) 2)
+               (/ (- (display-pixel-height) (frame-outer-height frame)) 2)))))
 
 ;;;;------------------------------------
 ;;;; Key-bindings.

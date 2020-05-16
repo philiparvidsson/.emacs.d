@@ -51,6 +51,7 @@
         mark-whole-buffer
         mouse-set-region
         my-open-file-manager
+        projectile-find-file
         save-some-buffers
         swiper-all
         w32-drag-n-drop
